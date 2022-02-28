@@ -1,0 +1,9 @@
+
+.axis .domain,
+.axis.xAxis line {
+  display: none;
+}
+
+.highlighted {
+  stroke-width: 5px;
+}
