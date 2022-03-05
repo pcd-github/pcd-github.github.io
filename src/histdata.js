@@ -8,6 +8,35 @@ export const getStdDevEquityReturn = () => {
     return d3.deviation(histData, (d) => d.equity);
 }
 
+export const calcBondYield = (bondStake, histIndex) => {
+        
+    var retValue = 0;
+
+    // if we're at the end of the cycle, use the simplified calculation
+    if (histData.length <= (histIndex + 1)) {
+        retValue = bondStake * histData[histIndex].bonds;
+    }
+    else {
+        var bg1 = (1 - Math.pow(1 + histData[histIndex + 1].bonds, -9 ))
+                  * histData[histIndex].bonds;
+        bg1 = bg1 / histData[histIndex + 1].bonds;
+        
+        var bg2 = 1 / Math.pow(1 + histData[histIndex + 1].bonds, 9);
+        bg2 = bg2 - 1;
+
+        retValue = bondStake * (bg1 + bg2 + histData[histIndex].bonds);
+    }
+
+    return retValue;
+}
+
+export const findHistStartIndex = (startDataYear) => {
+    const firstYear = histData[0].year;
+    const offset = startDataYear - firstYear;
+
+    return offset;
+}
+
 export const histData = [
     {
         year: 1871, cpi: 12.46, dividends: 0.05855856,

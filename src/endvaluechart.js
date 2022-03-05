@@ -242,6 +242,7 @@ function EndValueChart (props) {
 
         drawHistogram(svg);
         prepTooltip(svg);
+    // eslint-disable-next-line
     }, [props] );
 
     return (

@@ -4,15 +4,14 @@ import * as d3 from "d3";
 import SummaryCards from "./summary.js";
 import EndValueChart from './endvaluechart.js';
 import "./chartdata.css";
-import { histData } from "./histdata.js";
-import { getAvgEquityReturn, getStdDevEquityReturn } from "./histdata.js";
-import { makeCurrency, makePct, getColorStringForRelativeValue, getPerRunClassName, getPortfolioLineClassName, cleanupPrev, findByID} from './common.js';
+import { makePct, getPerRunClassName, getPortfolioLineClassName, cleanupPrev, findByID} from './common.js';
+
+// for debugging only
+import { getAvgEquityReturn, getStdDevEquityReturn } from './histdata.js';
 
 function Chart (props) {
   
-    const [allCycleDataState, setAllCycleDataState] = useState([]);
-    const [allCycleMetaState, setAllCycleMetaState] = useState([]);
-
+    // TODO review all chart state vars after refactoring
     const [avgAdjEndValueState, setAvgAdjEndValueState] = useState(0);
     const [medianAdjEndValueState, setMedianAdjEndValueState] = useState(0);
     const [minAdjEndValueState, setMinAdjEndValueState] = useState(0);
@@ -24,7 +23,6 @@ function Chart (props) {
     const [maxReturnsState, setMaxReturnsState] = useState(0);
 
     const [pctPositiveNetState, setPctPositiveNetState] = useState(0);
-    const [numCyclesState, setNumCyclesState] = useState(0);
     const [numFailsState, setNumFailsState] = useState(0);
     const [minFailAgeState, setMinFailAgeState] = useState(0);
     const [medianFailAgeState, setMedianFailAgeState] = useState(0);
@@ -44,7 +42,6 @@ function Chart (props) {
     const tooltipHeight = 75;
     const marginTranslate = "translate(" + margin.left + "," + margin.top + ")";
     const normalStrokeWidth = 1.5;
-    var allCycleMeta = [];
 
     const getXScale = () => { 
         var xExt = [props.currentage, props.lifeexpectancy];
@@ -88,7 +85,7 @@ function Chart (props) {
             .attr("d", d3.line()
                         .x(function(d) { return xScaleIn(d.age) })
                         .y(function(d) { return yScaleIn(d.adjEndValue) })
-            );        
+            );  
     }
 
     const prepHoverStuff = (svg) => {
@@ -169,7 +166,7 @@ function Chart (props) {
         var xScaleIn = getXScale();
         const coords = d3.pointer(e);
         const x0 = xScaleIn.invert(coords[0]);
-        const oneCycleData = allCycleDataState[0];
+        const oneCycleData = props.cycledata[0];
         const i = bisect(oneCycleData, x0, 1);
         const selectedData = oneCycleData[i];
         const clientX = xScaleIn(selectedData.age);
@@ -198,157 +195,13 @@ function Chart (props) {
         getTooltipWrapper().attr('display', 'none');
     };
 
-    /*
-    const dumpCycleData = (oneCycle) => {
-        for (var i = 0; i < oneCycle.length; i++) {
-
-            console.log(oneCycle[i].year + 
-                ' st:' + makeCurrency(oneCycle[i].beginValue) +
-                ' cpi:' + Number(oneCycle[i].cumulativeCPI).toFixed(2) + 
-                ' sp:' + makeCurrency(oneCycle[i].actualSpend) + 
-                ' e$:' + makeCurrency(oneCycle[i].equityAppr) +
-                ' d$:' + makeCurrency(oneCycle[i].divAppr) +
-                ' b$:' + makeCurrency(oneCycle[i].bondAppr) +
-                ' f$: ' + makeCurrency(oneCycle[i].fees) + 
-                ' ae$: ' + makeCurrency(oneCycle[i].adjEndValue)
-                );
-        }
-    }
-     */
-
-    const calcBondYield = (bondStake, histIndex) => {
-        
-        var retValue = 0;
-
-        // if we're at the end of the cycle, use the simplified calculation
-        if (histData.length <= (histIndex + 1)) {
-            retValue = bondStake * histData[histIndex].bonds;
-        }
-        else {
-            var bg1 = (1 - Math.pow(1 + histData[histIndex + 1].bonds, -9 ))
-                      * histData[histIndex].bonds;
-            bg1 = bg1 / histData[histIndex + 1].bonds;
-            
-            var bg2 = 1 / Math.pow(1 + histData[histIndex + 1].bonds, 9);
-            bg2 = bg2 - 1;
-
-            retValue = bondStake * (bg1 + bg2 + histData[histIndex].bonds);
-        }
-
-        return retValue;
-    }
-
-    const findHistStartIndex = (startDataYear) => {
-        const firstYear = histData[0].year;
-        const offset = startDataYear - firstYear;
-
-        return offset;
-    }
-
-    const calcAnnualAggReturn = (oneYear, stockPct, bondPct) => {
-
-        var retVal = (oneYear.equityReturn * stockPct) + (oneYear.bondReturn * bondPct);
-        
-        if (isNaN(retVal)) {
-            if (1 === stockPct) {
-                retVal = oneYear.equityReturn;
-            }
-            else if (1 === bondPct) {
-                retVal = oneYear.bondReturn;
-            }
-            else {
-                retVal = 0;
-                console.log('unexpected aggReturn result- equity :(' + 
-                            makePct(oneYear.equityReturn) + ',' + makePct(stockPct) + ') ' +
-                            ' bond:(' +
-                            makePct(oneYear.bondReturn) + ',' + makePct(bondPct) + ')');
-            }
-        }
-
-        return retVal;
-    }
-    const runCycle = (startIndex, numYears) => {
-        var cycleData = [];
-        const stockPct = +(props.stockallocation) / 100;
-        const bondPct = +(props.bondallocation) / 100;
-        const feePct = +(props.feepct) / 100;
-        const ssAge = +(props.ssage);
-        const ssIncome = +(props.ssincome);
-        const startCPI = histData[startIndex].cpi;
-
-        for(var i = 0; i < numYears; i++){
-            var obj = { "year": histData[startIndex + i].year,
-                        "age": +(props.currentage) + i,
-                        "beginValue": (i > 0) ? cycleData[i - 1].endValue : +(props.portfoliovalue),
-                        "equityReturn": histData[startIndex + i].equity,
-                        "equityAppr": 0,
-                        "divAppr": 0,
-                        "bondReturn": 0,
-                        "bondAppr": 0,
-                        "aggReturn": 0,
-                        "cumulativeCPI": histData[startIndex + i].cpi / startCPI,
-                        "spend": +(props.spendvalue),
-                        "actualSpend": +(props.spendvalue),
-                        "fees": 0,
-                        "netDelta": 0,
-                        "endValue": 0,
-                        "adjEndValue": 0,
-                        "appr": 0,
-                        "adjAppr": 0,
-                      };
-            // adjust spend for cumultative cpi
-            obj.actualSpend = obj.spend * obj.cumulativeCPI;
-            // apply ss adjustment if applicable
-            var adjustment = (ssAge <= obj.age) ? (ssIncome * obj.cumulativeCPI) : 0;
-            obj.actualSpend -= adjustment;
-            // port1 = subtract spend from start port
-            obj.endValue = obj.beginValue - obj.actualSpend;
-            if (0 < obj.endValue) {
-                var startStockValue = obj.endValue * stockPct;
-                // e growth = port1 * e-share * e-growth
-                obj.equityAppr = startStockValue * obj.equityReturn;
-                // calc dividends
-                obj.divAppr = startStockValue * histData[startIndex + i].dividends;
-                // b growth = port1 * b=share * b-growth
-                obj.bondAppr = calcBondYield(obj.endValue * bondPct, startIndex + i);
-                obj.bondReturn = obj.bondAppr / (obj.beginValue * bondPct);
-                obj.aggReturn = calcAnnualAggReturn(obj, stockPct, bondPct);
-                // port2 = port1 + e-growth + b-growth
-                obj.appr = obj.equityAppr + obj.divAppr + obj.bondAppr;
-                obj.endValue += obj.appr;
-                // end port = port2 - (fees (based on cpi-adj value))
-                obj.fees = (obj.beginValue + obj.appr) * feePct;
-                obj.endValue -= obj.fees;
-
-                // total +/- for the year
-                obj.netDelta = obj.appr - obj.actualSpend - obj.fees;
-
-                /*
-                console.log('y:' + obj.year + ' agg%:' + makePct(obj.aggReturn) + 
-                            ' appr$:' + makeCurrency(obj.appr) + 
-                            ' spend+fee$:' + makeCurrency((obj.actualSpend + obj.fees)) + 
-                            ' delta$' + makeCurrency(obj.netDelta));
-                            */
-
-                obj.adjEndValue = obj.endValue / obj.cumulativeCPI;
-                obj.adjAppr = obj.appr / obj.cumulativeCPI;
-                cycleData.push(obj);
-            }
-            else {
-                obj.endValue = obj.adjEndValue = 0;
-                cycleData.push(obj);
-                break;
-            }
-        }
-        return cycleData;
-    }
-
     const getBondReturns = () => {
         var retVal = [];
+        const allCycleData = props.cycleData;
 
-        for (var iCycle = 0; iCycle < allCycleDataState.length; iCycle++) {
-            for (var year = 0; year < allCycleDataState[iCycle].length; year++) {
-                const oneYear = allCycleDataState[iCycle][year];
+        for (var iCycle = 0; iCycle < allCycleData.length; iCycle++) {
+            for (var year = 0; year < allCycleData[iCycle].length; year++) {
+                const oneYear = allCycleData[iCycle][year];
                 retVal.push(oneYear.bondReturn);
             }
         }
@@ -356,12 +209,12 @@ function Chart (props) {
         return retVal;
     }
 
-    const getAggReturns = (allCycles) => {
+    const getAggReturns = (allCycleData) => {
         var retVal = [];
 
-        for (var iCycle = 0; iCycle < allCycles.length; iCycle++) {
-            for (var year = 0; year < allCycles[iCycle].length; year++) {
-                const oneYear = allCycles[iCycle][year];
+        for (var iCycle = 0; iCycle < allCycleData.length; iCycle++) {
+            for (var year = 0; year < allCycleData[iCycle].length; year++) {
+                const oneYear = allCycleData[iCycle][year];
                 retVal.push(oneYear.aggReturn);
             }
         }
@@ -369,12 +222,12 @@ function Chart (props) {
         return retVal;
     }
 
-    const getNetDeltas = (allCycles) => {
+    const getNetDeltas = (allCycleData) => {
         var retVal = [];
 
-        for (var iCycle = 0; iCycle < allCycles.length; iCycle++) {
-            for (var year = 0; year < allCycles[iCycle].length; year++) {
-                const oneYear = allCycles[iCycle][year];
+        for (var iCycle = 0; iCycle < allCycleData.length; iCycle++) {
+            for (var year = 0; year < allCycleData[iCycle].length; year++) {
+                const oneYear = allCycleData[iCycle][year];
                 retVal.push(oneYear.netDelta);
             }
         }
@@ -394,50 +247,14 @@ function Chart (props) {
         return (numPos / netDeltas.length);
     }
 
-    const calcCycleMeta = (oneCycle) => {
-        var extAdjEndValue = d3.extent(oneCycle, (d) => d.adjEndValue);
-        var avgAdjEndValue = d3.mean(oneCycle, (d) => d.adjEndValue);
-        var medAdjEndValue = d3.median(oneCycle, (d) => d.adjEndValue);
-        var totalSpend = d3.sum(oneCycle, (d) => d.actualSpend);
-        var totalAppr = d3.sum(oneCycle, (d) => d.appr);
-        var totalAdjAppr = d3.sum(oneCycle, (d) => d.adjAppr);
-        var pctStart = oneCycle[oneCycle.length - 1].adjEndValue / props.portfoliovalue;
-        const thisLineColor = getColorStringForRelativeValue(pctStart);
-        var extAggReturn = d3.extent(oneCycle, (d) => d.aggReturn);
-        var avgAggReturn = d3.mean(oneCycle, (d) => d.aggReturn);
-        var medAggReturn = d3.median(oneCycle, (d) => d.aggReturn);
+    const calcSummaryData = () => {
 
-        var oneMeta = {
-            'startCycleValue': props.portfoliovalue,
-            'endCycleValue': oneCycle[oneCycle.length - 1].endValue,
-            'adjEndCycleValue': oneCycle[oneCycle.length - 1].adjEndValue,
-            'extent': extAdjEndValue,
-            'mean': avgAdjEndValue,
-            'median': medAdjEndValue,
-            'pctOfStart': pctStart,
-            'totalSpend': totalSpend,
-            'totalAppreciation': totalAppr,
-            'totalAdjAppreciation': totalAdjAppr,
-            'extAggReturn': extAggReturn,
-            'avgAggReturn': avgAggReturn,
-            'medAggReturn': medAggReturn,
-            'fail': (0 >= oneCycle[oneCycle.length - 1].adjEndValue),
-            'failAge': (0 >= oneCycle[oneCycle.length - 1].adjEndValue) ? 
-                       (oneCycle.length + props.currentage) :
-                       undefined,
-            'startYear': oneCycle[0].year,
-            'cycleData': oneCycle,
-            'lineColor': thisLineColor,
-        };
+        const allCycles = props.cycledata;
+        const allCyclesMeta = props.cyclemeta;
 
-        return oneMeta;
-    }
-
-    const calcSummaryData = (allCycles) => {
-
-        var extAdjEnd = d3.extent(allCycleMeta, (d) => d.adjEndCycleValue);
-        var avgAdjEnd = d3.mean(allCycleMeta, (d) => d.adjEndCycleValue);
-        var medAdjEnd = d3.median(allCycleMeta, (d) => d.adjEndCycleValue);
+        var extAdjEnd = d3.extent(allCyclesMeta, (d) => d.adjEndCycleValue);
+        var avgAdjEnd = d3.mean(allCyclesMeta, (d) => d.adjEndCycleValue);
+        var medAdjEnd = d3.median(allCyclesMeta, (d) => d.adjEndCycleValue);
 
         var aggReturns = getAggReturns(allCycles);
         var avgReturns = d3.mean(aggReturns);
@@ -451,10 +268,10 @@ function Chart (props) {
         var minFailAge = props.lifeexpectancy + 1;
         var failAges = [];
 
-        for (var i = 0; i < allCycleMeta.length; i++) {
-            if (allCycleMeta[i].fail) {
-                minFailAge = Math.min(allCycleMeta[i].failAge, minFailAge);
-                failAges[numFails] = allCycleMeta[i].failAge;
+        for (var i = 0; i < allCyclesMeta.length; i++) {
+            if (allCyclesMeta[i].fail) {
+                minFailAge = Math.min(allCyclesMeta[i].failAge, minFailAge);
+                failAges[numFails] = allCyclesMeta[i].failAge;
                 numFails++;
             }
         }
@@ -470,64 +287,43 @@ function Chart (props) {
         setMaxReturnsState(extReturns[1]);
 
         setPctPositiveNetState(pctPositiveNet);
-        setNumCyclesState(allCycleMeta.length);
         setNumFailsState(numFails);
         setMinFailAgeState(minFailAge);
         setMedianFailAgeState(d3.median(failAges));
     }
 
-    const calcCycles = (svg) => {
-        const lifetime = props.lifeexpectancy - props.currentage + 1;
-        const startDataYear = props.startdatayear;
-        const endDataYear = props.enddatayear;
-        // TODO : require numCycles to be greater than zero
-        const numCycles = (endDataYear - startDataYear + 2) - lifetime;
-        const startIndex = findHistStartIndex(startDataYear);
-        var portMin = Number.POSITIVE_INFINITY;
-        var portMax = Number.NEGATIVE_INFINITY;
-        var allCycles = [];
-
-        cleanupPrev();
-
-        for (var i = 0; i < numCycles; i++) {
-            var oneCycle = runCycle(startIndex + i, lifetime);
-            var cycleMeta = calcCycleMeta(oneCycle);
-            
-            allCycleMeta[i] = cycleMeta;
-            allCycles[i] = oneCycle;
-
-            portMin = Math.min(portMin, cycleMeta.extent[0]);
-            portMax = Math.max(portMax, cycleMeta.extent[1]);
-        }
-
-        setAllCycleDataState(allCycles);
-        setAllCycleMetaState(allCycleMeta);
-
-        calcSummaryData(allCycles);
-
+    const drawChart = (svg) => {
+        const portMin = +(props.portmin);
+        const portMax = +(props.portmax);
         const xScale = getXScale();
         const yScale = getYScale(portMin, portMax);
+        const allCyclesData = props.cycledata;
+        const allCyclesMeta = props.cyclemeta;
+        const numCycles = +(props.numcycles);
 
+        cleanupPrev();
         drawAxes(svg, xScale, yScale, portMin, portMax);
-        for (i = 0; i < numCycles; i++) {
-            drawPortfolioLine(svg, xScale, yScale, allCycleMeta[i], allCycles[i]);
+        for (var i = 0; i < numCycles; i++) {
+            drawPortfolioLine(svg, xScale, yScale, allCyclesMeta[i], allCyclesData[i]);
         }
     }
 
-   React.useEffect(() => {
+    React.useEffect(() => {
 
         const svg = findByID(svgCycleChartID)
                       .append("g")
                       .attr("transform", marginTranslate);
-        calcCycles(svg);
 
+        calcSummaryData();
+        drawChart(svg);
         prepHoverStuff(svg);
+    // eslint-disable-next-line
     }, [props] );
 
     return (
         <div>
             <SummaryCards 
-             fails={numFailsState} cycles={numCyclesState}
+             fails={numFailsState} cycles={props.numcycles}
              minfailage={minFailAgeState} medianfailage={medianFailAgeState} 
              medianendvalue={medianAdjEndValueState} avgendvalue={avgAdjEndValueState}
              minendvalue={minAdjEndValueState} maxendvalue={maxAdjEndValueState}
@@ -556,7 +352,7 @@ function Chart (props) {
              minendvalue={minAdjEndValueState} 
              maxendvalue={maxAdjEndValueState} 
              medianendvalue={medianAdjEndValueState}
-             metadata={allCycleMetaState} 
+             metadata={props.cyclemeta} 
              cyclechartid={svgCycleChartID} />            
         </div>
     );
