@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import SummaryCards from "./summary.js";
 import EndValueChart from './endvaluechart.js';
 import "./chartdata.css";
-import { makePct, getPerRunClassName, getPortfolioLineClassName, cleanupPrev, findByID} from './common.js';
+import { makePct, getPerRunClassName, getPortfolioLineClassName, findByID, makeCurrency, cleanupPrev} from './common.js';
 
 // for debugging only
 import { getAvgEquityReturn, getStdDevEquityReturn } from './histdata.js';
@@ -28,7 +28,7 @@ function Chart (props) {
     const [medianFailAgeState, setMedianFailAgeState] = useState(0);
 
     const svgCycleChartID = 'd3cycletarget';
-    const perRunClass = getPerRunClassName();
+    const perRunClass = getPerRunClassName() + svgCycleChartID;
     const hoverLineID = 'hoverLine';
     const ttWrapID = 'ttwrapper';
     const ttBackID = 'ttbackground';
@@ -48,83 +48,6 @@ function Chart (props) {
         return d3.scaleLinear()
                     .domain(xExt)
                     .range([ 0, boundedWidth ]);
-    }
-
-    const getYScale = (rangeMin, rangeMax) => {
-        var yExt = [rangeMin, rangeMax];
-        return d3.scaleLinear()
-                    .domain(yExt)
-                    .range([ boundedHeight, 0 ]);
-    }
-
-    const drawAxes = (svg, xScaleIn, yScaleIn, rangeMin, rangeMax) => {
- 
-        svg.append("g")
-            .attr("class", perRunClass)
-            .attr("transform", "translate(0," + boundedHeight + ")")
-            .call(d3.axisBottom(xScaleIn));
-        svg.append("g")
-            .attr("class", perRunClass)
-            .call(d3.axisLeft(yScaleIn));
-    };
-
-    const drawPortfolioLine = (svg, xScaleIn, yScaleIn, oneCycleMeta, oneCycle) => {
-
-        const classNames = perRunClass + ' ' 
-                            + getPortfolioLineClassName() + ' ' 
-                            + oneCycleMeta.lineColor;
-        svg.append("path")
-            .datum(oneCycle)
-            .attr('id', oneCycleMeta.startYear)
-            .attr('class', classNames)
-            .attr("fill", "none")
-            .attr("pointer-events", "none")
-            .style("opacity", 1)
-            .attr("stroke", oneCycleMeta.lineColor)
-            .attr("stroke-width", normalStrokeWidth)
-            .attr("d", d3.line()
-                        .x(function(d) { return xScaleIn(d.age) })
-                        .y(function(d) { return yScaleIn(d.adjEndValue) })
-            );  
-    }
-
-    const prepHoverStuff = (svg) => {
-        const tooltipWrapper = svg
-                .append('g')
-                .attr('id', ttWrapID)
-                .attr('display', 'none');
-        
-        tooltipWrapper.append('rect')
-                        .style('opacity', 0.70)
-                        .attr('id', ttBackID)
-                        .attr('width', tooltipWidth)
-                        .attr('height', tooltipHeight)
-                        .attr("pointer-events", "none")
-                        .attr("fill", "#e8e8e8"); 
-
-        const tooltipText = tooltipWrapper.append('g').append('text');
-
-        tooltipText.attr("pointer-events", "none")
-                    .attr('font-weight', 900)
-                    .attr('text-anchor', 'left');
-                    
-        tooltipText.append('tspan')
-                    .attr('id', ttAgeID)
-                    .attr('x', '5')
-                    .attr('y', '5')
-                    .attr('dy', '15px')
-                    .attr("pointer-events", "none");
-
-        svg.append("g")
-           .append("rect")
-            .style('opacity', 0)
-            .attr('id', hoverLineID)
-            .attr("pointer-events", "none")
-            .attr("class", "dotted")
-            .attr("stroke-width", "1px")
-            .attr("width", ".5px")
-            .attr("height", boundedHeight);
-        
     }
 
     const getHoverLine = () => {
@@ -247,78 +170,167 @@ function Chart (props) {
         return (numPos / netDeltas.length);
     }
 
-    const calcSummaryData = () => {
-
-        const allCycles = props.cycledata;
-        const allCyclesMeta = props.cyclemeta;
-
-        var extAdjEnd = d3.extent(allCyclesMeta, (d) => d.adjEndCycleValue);
-        var avgAdjEnd = d3.mean(allCyclesMeta, (d) => d.adjEndCycleValue);
-        var medAdjEnd = d3.median(allCyclesMeta, (d) => d.adjEndCycleValue);
-
-        var aggReturns = getAggReturns(allCycles);
-        var avgReturns = d3.mean(aggReturns);
-        var medianReturns = d3.median(aggReturns);
-        var extReturns = d3.extent(aggReturns);
-
-        var netDeltas = getNetDeltas(allCycles);
-        var pctPositiveNet = getPctPositiveNet(netDeltas);
-
-        var numFails = 0;
-        var minFailAge = props.lifeexpectancy + 1;
-        var failAges = [];
-
-        for (var i = 0; i < allCyclesMeta.length; i++) {
-            if (allCyclesMeta[i].fail) {
-                minFailAge = Math.min(allCyclesMeta[i].failAge, minFailAge);
-                failAges[numFails] = allCyclesMeta[i].failAge;
-                numFails++;
-            }
-        }
-
-        setAvgAdjEndValueState(avgAdjEnd);
-        setMedianAdjEndValueState(medAdjEnd);
-        setMinAdjEndValueState(extAdjEnd[0]);
-        setMaxAdjEndValueState(extAdjEnd[1]);
-
-        setAvgReturnsState(avgReturns);
-        setMedianReturnsState(medianReturns);
-        setMinReturnsState(extReturns[0]);
-        setMaxReturnsState(extReturns[1]);
-
-        setPctPositiveNetState(pctPositiveNet);
-        setNumFailsState(numFails);
-        setMinFailAgeState(minFailAge);
-        setMedianFailAgeState(d3.median(failAges));
-    }
-
-    const drawChart = (svg) => {
-        const portMin = +(props.portmin);
-        const portMax = +(props.portmax);
-        const xScale = getXScale();
-        const yScale = getYScale(portMin, portMax);
-        const allCyclesData = props.cycledata;
-        const allCyclesMeta = props.cyclemeta;
-        const numCycles = +(props.numcycles);
-
-        cleanupPrev();
-        drawAxes(svg, xScale, yScale, portMin, portMax);
-        for (var i = 0; i < numCycles; i++) {
-            drawPortfolioLine(svg, xScale, yScale, allCyclesMeta[i], allCyclesData[i]);
-        }
-    }
 
     React.useEffect(() => {
+            
+        const calcSummaryData = () => {
+            const allCycles = props.cycledata;
+            const allCyclesMeta = props.cyclemeta;
+    
+            var extAdjEnd = d3.extent(allCyclesMeta, (d) => d.adjEndCycleValue);
+            var avgAdjEnd = d3.mean(allCyclesMeta, (d) => d.adjEndCycleValue);
+            var medAdjEnd = d3.median(allCyclesMeta, (d) => d.adjEndCycleValue);
+    
+            var aggReturns = getAggReturns(allCycles);
+            var avgReturns = d3.mean(aggReturns);
+            var medianReturns = d3.median(aggReturns);
+            var extReturns = d3.extent(aggReturns);
+    
+            var netDeltas = getNetDeltas(allCycles);
+            var pctPositiveNet = getPctPositiveNet(netDeltas);
+    
+            var numFails = 0;
+            var minFailAge = props.lifeexpectancy + 1;
+            var failAges = [];
+    
+            for (var i = 0; i < allCyclesMeta.length; i++) {
+                if (allCyclesMeta[i].fail) {
+                    minFailAge = Math.min(allCyclesMeta[i].failAge, minFailAge);
+                    failAges[numFails] = allCyclesMeta[i].failAge;
+                    numFails++;
+                }
+            }
+    
+            setAvgAdjEndValueState(avgAdjEnd);
+            setMedianAdjEndValueState(medAdjEnd);
+            setMinAdjEndValueState(extAdjEnd[0]);
+            setMaxAdjEndValueState(extAdjEnd[1]);
+    
+            setAvgReturnsState(avgReturns);
+            setMedianReturnsState(medianReturns);
+            setMinReturnsState(extReturns[0]);
+            setMaxReturnsState(extReturns[1]);
+    
+            setPctPositiveNetState(pctPositiveNet);
+            setNumFailsState(numFails);
+            setMinFailAgeState(minFailAge);
+            setMedianFailAgeState(d3.median(failAges));
+        }
+
+        const getYScale = (rangeMin, rangeMax) => {
+            var yExt = [rangeMin, rangeMax];
+            return d3.scaleLinear()
+                        .domain(yExt)
+                        .range([ boundedHeight, 0 ]);
+        }
+        
+        const drawAxes = (svg, xScaleIn, yScaleIn, rangeMin, rangeMax) => {
+ 
+            svg.append("g")
+                .attr("class", perRunClass)
+                .attr("transform", "translate(0," + boundedHeight + ")")
+                .call(d3.axisBottom(xScaleIn));
+            svg.append("g")
+                .attr("class", perRunClass)
+                .call(d3.axisLeft(yScaleIn));
+        };
+    
+        const drawPortfolioLine = (svg, xScaleIn, yScaleIn, oneCycleMeta, oneCycle) => {
+    
+            const classNames = perRunClass + ' ' 
+                                + getPortfolioLineClassName() + ' ' 
+                                + oneCycleMeta.lineColor;
+            svg.append("path")
+                .datum(oneCycle)
+                .attr('id', oneCycleMeta.startYear)
+                .attr('class', classNames)
+                .attr("fill", "none")
+                .attr("pointer-events", "none")
+                .style("opacity", 1)
+                .attr("stroke", oneCycleMeta.lineColor)
+                .attr("stroke-width", normalStrokeWidth)
+                .attr("d", d3.line()
+                            .x(function(d) { return xScaleIn(d.age) })
+                            .y(function(d) { return yScaleIn(d.adjEndValue) })
+                );  
+        }
+                
+        const drawChart = (svg) => {
+            const portMin = +(props.portmin);
+            const portMax = +(props.portmax);
+            const xScale = getXScale();
+            const yScale = getYScale(portMin, portMax);
+            const allCyclesData = props.cycledata;
+            const allCyclesMeta = props.cyclemeta;
+            const numCycles = +(props.numcycles);
+    
+            drawAxes(svg, xScale, yScale, portMin, portMax);
+            for (var i = 0; i < numCycles; i++) {
+                drawPortfolioLine(svg, xScale, yScale, allCyclesMeta[i], allCyclesData[i]);
+            }
+        }    
+
+        const prepHoverStuff = (svg) => {
+            const tooltipWrapper = svg
+                    .append('g')
+                    .attr('id', ttWrapID)
+                    .attr('display', 'none');
+            
+            tooltipWrapper.append('rect')
+                            .style('opacity', 0.70)
+                            .attr('id', ttBackID)
+                            .attr('width', tooltipWidth)
+                            .attr('height', tooltipHeight)
+                            .attr("pointer-events", "none")
+                            .attr("fill", "#e8e8e8"); 
+    
+            const tooltipText = tooltipWrapper.append('g').append('text');
+    
+            tooltipText.attr("pointer-events", "none")
+                        .attr('font-weight', 900)
+                        .attr('text-anchor', 'left');
+                        
+            tooltipText.append('tspan')
+                        .attr('id', ttAgeID)
+                        .attr('x', '5')
+                        .attr('y', '5')
+                        .attr('dy', '15px')
+                        .attr("pointer-events", "none");
+    
+            svg.append("g")
+               .append("rect")
+                .style('opacity', 0)
+                .attr('id', hoverLineID)
+                .attr("pointer-events", "none")
+                .attr("class", "dotted")
+                .attr("stroke-width", "1px")
+                .attr("width", ".5px")
+                .attr("height", boundedHeight);
+            
+        }
 
         const svg = findByID(svgCycleChartID)
                       .append("g")
                       .attr("transform", marginTranslate);
 
+        cleanupPrev(perRunClass);
         calcSummaryData();
         drawChart(svg);
         prepHoverStuff(svg);
-    // eslint-disable-next-line
-    }, [props] );
+        console.log('e chart: ' + makeCurrency(medianAdjEndValueState));
+        // eslint-disable-next-line
+    }, [
+        props.portfoliovalue,
+        props.portmin, 
+        props.portmax,
+        props.cycledata, 
+        props.cyclemeta, 
+        props.numcycles, 
+        props.currentage,
+        props.lifeexpectancy, 
+    ] );
+
+    console.log('r chart : ' + makeCurrency(medianAdjEndValueState) );
 
     return (
         <div>

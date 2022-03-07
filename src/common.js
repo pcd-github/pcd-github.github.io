@@ -11,9 +11,10 @@ const portfolioLineClass = 'portfolioline';
 const startValueMargin = 0.5;
 const thresholdValues = [0, 1 - startValueMargin, 1 + startValueMargin, 3, 20];
 
-export const cleanupPrev = () => {
-    const perRunSelect = '.' + perRunClass;
+export const cleanupPrev = (perRunClassID) => {
+    const perRunSelect = '.' + perRunClassID;
     d3.selectAll(perRunSelect).remove();
+    console.log('cleanup ' + perRunClassID);
 }
 
 export const getPerRunClassName = () => {
