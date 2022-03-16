@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import SummaryCards from "./summary.js";
 import EndValueChart from './endvaluechart.js';
 import "./chartdata.css";
-import { getSelectedOpacity, getUnselectedOpacity, makePct, getPerRunClassName, getPortfolioLineClassName, findByID, makeCurrency, cleanupPrev} from './common.js';
+import { getSelectedOpacity, getUnselectedOpacity, makePct, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev} from './common.js';
 
 // for debugging only
 import { getAvgEquityReturn, getStdDevEquityReturn } from './histdata.js';
@@ -224,7 +224,7 @@ function Chart (props) {
                         .range([ boundedHeight, 0 ]);
         }
         
-        const drawAxes = (svg, xScaleIn, yScaleIn, rangeMin, rangeMax) => {
+        const drawAxes = (svg, xScaleIn, yScaleIn) => {
  
             svg.append("g")
                 .attr("class", perRunClass)
@@ -263,15 +263,22 @@ function Chart (props) {
         }
                 
         const drawChart = (svg) => {
-            const portMin = +(props.portmin);
-            const portMax = +(props.portmax);
+            var portMin = +(props.portmin);
+            var portMax = +(props.portmax);
+
+            if ((null !== props.minzoom) &&
+                (null !== props.maxzoom)) {
+                portMin = +(props.minzoom);
+                portMax = +(props.maxzoom);
+            }
+
             const xScale = getXScale();
             const yScale = getYScale(portMin, portMax);
             const allCyclesData = props.cycledata;
             const allCyclesMeta = props.cyclemeta;
             const numCycles = +(props.numcycles);
     
-            drawAxes(svg, xScale, yScale, portMin, portMax);
+            drawAxes(svg, xScale, yScale);
             for (var i = 0; i < numCycles; i++) {
                 drawPortfolioLine(svg, xScale, yScale, allCyclesMeta[i], allCyclesData[i]);
             }
@@ -324,7 +331,6 @@ function Chart (props) {
         calcSummaryData();
         drawChart(svg);
         prepHoverStuff(svg);
-        console.log('e chart: ' + makeCurrency(medianAdjEndValueState));
         // eslint-disable-next-line
     }, [
         props.portfoliovalue,
@@ -335,9 +341,13 @@ function Chart (props) {
         props.numcycles, 
         props.currentage,
         props.lifeexpectancy, 
+        props.minzoom,
+        props.maxzoom,
+        props.zoomcolor,
+        props.selectedbin,
     ] );
 
-    console.log('r chart : ' + makeCurrency(medianAdjEndValueState) );
+    // console.log('r chart : ' + makeCurrency(medianAdjEndValueState) );
 
     return (
         <div>

@@ -17,7 +17,7 @@ import { Radio } from "@mui/material";
 import { Stack } from "@mui/material";
 import { histData } from "./histdata.js";
 import { calcBondYield, findHistStartIndex } from "./histdata.js";
-import { makeCurrency, makePct, getColorStringForRelativeValue } from './common.js';
+import { makePct, getColorStringForRelativeValue } from './common.js';
 import Chart from './chart.js';
 
 const defaultPortfolioValue = 1250000;
@@ -278,8 +278,6 @@ class SWRCalc extends React.Component {
 
         // Calculate chart content (no actual rendering)
         calcCycles();
-
-        console.log('r swrcalc: ' + makeCurrency(portMax));
 
         return (
 

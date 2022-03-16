@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as d3 from "d3";
-import { getSelectedOpacity, getUnselectedOpacity, cleanupPrev, makeCurrency, makePct, getPerRunClassName, getThresholdValues, getColorStringForRelativeValue, findByID, findByClass, getPortfolioLineClassName} from "./common.js";
+import { getSelectedOpacity, getUnselectedOpacity, cleanupPrev, makeCurrency, makePct, getPerRunClassName, getThresholdValues, getColorStringForRelativeValue, findByID } from "./common.js";
 
 function EndValueChart (props) {
 
@@ -43,6 +43,18 @@ function EndValueChart (props) {
         return findByID(ttBinPctID);
     }
 
+    const getBinExtents = (thisBin) => {
+        var retVal = [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY];
+
+        for (var i = 0; i < thisBin.length; i++) {
+            var oneExt = d3.extent(thisBin[i].cycleData, (d) => d.adjEndValue);
+            retVal[0] = Math.min(retVal[0], oneExt[0]);
+            retVal[1] = Math.max(retVal[1], oneExt[1]);
+        }
+
+        return retVal;
+    }
+
     const handleMouseDown = (e) => {
         const thisBin = e.srcElement.__data__;
         var colorString = null;
@@ -52,10 +64,11 @@ function EndValueChart (props) {
 
         if (props.selectedbin !== thisBin.x0) {
             const valueRatio = (thisBin.x0) / props.startvalue;
+            var binExt = getBinExtents(thisBin);
             colorString = getColorStringForRelativeValue(valueRatio);   
-            zoomMin = thisBin.x0;
-            zoomMax = thisBin.x1; 
-            selectedBin = zoomMin;
+            zoomMin = binExt[0];
+            zoomMax = binExt[1]; 
+            selectedBin = thisBin.x0;
         }
 
         props.zoomcallback(zoomMin, zoomMax, colorString, selectedBin);
@@ -84,8 +97,6 @@ function EndValueChart (props) {
         getTooltipBackground()                
             .attr('width', ttBounds.width)
             .attr('height', ttBounds.height);
-        // const mouseTranslate = 'translate(' + coords[0] + ',' + (coords[1] - ttBounds.height) + ')';
-        // tt.attr('transform', mouseTranslate);
     };
     
     const handleMouseLeave = () => {
@@ -142,6 +153,18 @@ function EndValueChart (props) {
             return binFunc(props.metadata);
         }    
 
+        const getBinOpacity = (thisBin) => {
+
+            var retVal = getSelectedOpacity();
+
+            if ((null !== props.selectedbin) &&
+                (thisBin !== props.selectedbin) ) {
+                retVal = getUnselectedOpacity();
+            }
+
+            return retVal;
+        }
+
         const drawHistogram = (svg) => {
             const currencyThresholdValues = getCurrencyThresholds();
             const bins = createBins(currencyThresholdValues);        
@@ -175,19 +198,7 @@ function EndValueChart (props) {
                     .attr("width", function(d) { return xScale(d.x1) - xScale(d.x0) -1 ; })
                     .attr("height", function(d) { return boundedHeight - yScale(d.length); })
                     .style("fill",  function(d) { return getColorStringForRelativeValue(d.x0 / props.startvalue);})
-                    .style("opacity", function(d) {
-                        if (null != props.selectedbin) {
-                            if (d.x0 === props.selectedbin) {
-                                return getSelectedOpacity();
-                            }
-                            else {
-                                return getUnselectedOpacity();
-                            }
-                        }
-                        else {
-                            return getSelectedOpacity();
-                        }
-                    } )
+                    .style("opacity", function(d) { return getBinOpacity(d.x0); } )
                     .on('mousedown', handleMouseDown)
                     .on("mouseover", handleMouseOver)
                     .on("mouseout", handleMouseLeave)                
@@ -238,11 +249,8 @@ function EndValueChart (props) {
         cleanupPrev(perRunClass);
         drawHistogram(svg);
         prepTooltip(svg);
-        console.log('e evc : ' + makeCurrency(props.medianendvalue) );
         // eslint-disable-next-line
-    }, [props.metadata, props.medianendvalue, props.startvalue] );
-
-    console.log('r evc : ' + makeCurrency(props.medianendvalue) );
+    }, [props.metadata, props.medianendvalue, props.startvalue, props.selectedbin, props.zoomcolor] );
 
     return (
         <div>

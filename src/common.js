@@ -24,7 +24,6 @@ export const getUnselectedOpacity = () => {
 export const cleanupPrev = (perRunClassID) => {
     const perRunSelect = '.' + perRunClassID;
     d3.selectAll(perRunSelect).remove();
-    console.log('cleanup ' + perRunClassID);
 }
 
 export const getPerRunClassName = () => {
