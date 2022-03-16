@@ -50,7 +50,18 @@ class SWRCalc extends React.Component {
             useAllHistDataState: true,
             startDataYearState: defaultStartDataYear,
             endDataYearState: defaultEndDataYear,
+            minZoomValueState: null,
+            maxZoomValueState: null,
+            zoomColorState: null,
+            selectedBinState: null,
         }
+    }
+
+    zoomChart (minZoom, maxZoom, colorKey, selectedBin) {
+        this.setState( {minZoomValueState : minZoom} );
+        this.setState( {maxZoomValueState : maxZoom} );
+        this.setState( {zoomColorState : colorKey} );
+        this.setState( {selectedBinState : selectedBin });
     }
 
     render () {
@@ -397,6 +408,11 @@ class SWRCalc extends React.Component {
                        numcycles={numCycles}
                        currentage={this.state.currentAgeState}
                        lifeexpectancy={this.state.lifeExpectancyState}
+                       minzoom={this.state.minZoomValueState}
+                       maxzoom={this.state.maxZoomValueState}
+                       zoomcolor={this.state.zoomColorState}
+                       zoomcallback={this.zoomChart.bind(this)}
+                       selectedbin={this.state.selectedBinState}
                 />
             </Stack>
             </div>

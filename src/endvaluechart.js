@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as d3 from "d3";
-import { cleanupPrev, makeCurrency, makePct, getPerRunClassName, getThresholdValues, getColorStringForRelativeValue, findByID, findByClass, getPortfolioLineClassName} from "./common.js";
+import { getSelectedOpacity, getUnselectedOpacity, cleanupPrev, makeCurrency, makePct, getPerRunClassName, getThresholdValues, getColorStringForRelativeValue, findByID, findByClass, getPortfolioLineClassName} from "./common.js";
 
 function EndValueChart (props) {
 
@@ -15,7 +15,6 @@ function EndValueChart (props) {
     const totalHeight = 300;
     const tooltipWidth = 75;
     const tooltipHeight = 75;
-    var selectedBin = null;
 
     const calcBinMetadata = (data) => {
         const oneBinMetadata = {
@@ -44,41 +43,22 @@ function EndValueChart (props) {
         return findByID(ttBinPctID);
     }
 
-    const isBinSelected = (binID) => {
-        return (selectedBin === binID);
-    }
-
-    const selectBin = (binElement, thisBin) => {
-        const unselectedOpacity = 0.1;
-        const valueRatio = thisBin / props.startvalue;
-        const colorString = getColorStringForRelativeValue(valueRatio);
-        const cycleChart = findByID(props.cyclechartid);
-        const binChart = findByID(svgBinChartID);
-        findByClass(cycleChart, getPortfolioLineClassName()).style('opacity', unselectedOpacity);
-        findByClass(cycleChart, colorString).style('opacity', 1);
-        binChart.selectAll('rect').style('opacity', unselectedOpacity);
-        d3.select(binElement).style('opacity', 1);
-        selectedBin = thisBin;
-    }
-
-    const unselectBin = () => {
-        const cycleChart = findByID(props.cyclechartid);
-        const binChart = findByID(svgBinChartID);
-        findByClass(cycleChart, getPortfolioLineClassName()).style('opacity', 1);
-        binChart.selectAll('rect').style('opacity', 1);
-        selectedBin = null;
-    }
-
     const handleMouseDown = (e) => {
-        const binData = e.srcElement.__data__;
-        const thisBin = binData.x0;
+        const thisBin = e.srcElement.__data__;
+        var colorString = null;
+        var zoomMin = null;
+        var zoomMax = null;
+        var selectedBin = null;
 
-        if (!isBinSelected(thisBin)) {
-            selectBin(e.srcElement, thisBin);
+        if (props.selectedbin !== thisBin.x0) {
+            const valueRatio = (thisBin.x0) / props.startvalue;
+            colorString = getColorStringForRelativeValue(valueRatio);   
+            zoomMin = thisBin.x0;
+            zoomMax = thisBin.x1; 
+            selectedBin = zoomMin;
         }
-        else {
-            unselectBin();
-        }
+
+        props.zoomcallback(zoomMin, zoomMax, colorString, selectedBin);
     }
 
     const handleMouseOver = (e) => {
@@ -195,6 +175,19 @@ function EndValueChart (props) {
                     .attr("width", function(d) { return xScale(d.x1) - xScale(d.x0) -1 ; })
                     .attr("height", function(d) { return boundedHeight - yScale(d.length); })
                     .style("fill",  function(d) { return getColorStringForRelativeValue(d.x0 / props.startvalue);})
+                    .style("opacity", function(d) {
+                        if (null != props.selectedbin) {
+                            if (d.x0 === props.selectedbin) {
+                                return getSelectedOpacity();
+                            }
+                            else {
+                                return getUnselectedOpacity();
+                            }
+                        }
+                        else {
+                            return getSelectedOpacity();
+                        }
+                    } )
                     .on('mousedown', handleMouseDown)
                     .on("mouseover", handleMouseOver)
                     .on("mouseout", handleMouseLeave)                

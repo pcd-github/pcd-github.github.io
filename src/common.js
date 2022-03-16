@@ -10,6 +10,16 @@ const midValueColorString = 'DarkKhaki';
 const portfolioLineClass = 'portfolioline';
 const startValueMargin = 0.5;
 const thresholdValues = [0, 1 - startValueMargin, 1 + startValueMargin, 3, 20];
+const unselectedOpacity = 0.1;
+const selectedOpacity = 1.0;
+
+export const getSelectedOpacity = () => {
+    return selectedOpacity;
+}
+
+export const getUnselectedOpacity = () => {
+    return unselectedOpacity;
+}
 
 export const cleanupPrev = (perRunClassID) => {
     const perRunSelect = '.' + perRunClassID;
