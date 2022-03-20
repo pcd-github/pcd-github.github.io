@@ -249,8 +249,11 @@ function EndValueChart (props) {
         cleanupPrev(perRunClass);
         drawHistogram(svg);
         prepTooltip(svg);
+        // console.log('bin : e');
         // eslint-disable-next-line
     }, [props.metadata, props.medianendvalue, props.startvalue, props.selectedbin, props.zoomcolor] );
+
+    // console.log('bin : r');
 
     return (
         <div>

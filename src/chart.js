@@ -31,6 +31,7 @@ function Chart (props) {
     const ttBackID = 'ttbackground';
     const ttAgeID = 'ttage';
     const ttValueID = 'ttvalue';
+    const ttClass = 'tooltip';
     const margin = { top: 40, right: 65, bottom: 40, left: 65 };
     const totalWidth = 960;
     const totalHeight = 500;
@@ -40,7 +41,7 @@ function Chart (props) {
     const tooltipHeight = 75;
     const marginTranslate = "translate(" + margin.left + "," + margin.top + ")";
     const normalStrokeWidth = 1.5;
-    const boldStrokeWidth = 10;
+    // const boldStrokeWidth = 10;
 
     const getXScale = () => { 
         var xExt = [props.currentage, props.lifeexpectancy];
@@ -268,14 +269,17 @@ function Chart (props) {
         }    
 
         const prepHoverStuff = (svg) => {
+            const className = perRunClass + ' ' + ttClass;
             const tooltipWrapper = svg
                     .append('g')
                     .attr('id', ttWrapID)
+                    .attr('class', className)
                     .attr('display', 'none');
             
             tooltipWrapper.append('rect')
                             .style('opacity', 0.70)
                             .attr('id', ttBackID)
+                            .attr('class', className)
                             .attr('width', tooltipWidth)
                             .attr('height', tooltipHeight)
                             .attr("pointer-events", "none")
@@ -284,11 +288,13 @@ function Chart (props) {
             const tooltipText = tooltipWrapper.append('g').append('text');
     
             tooltipText.attr("pointer-events", "none")
+                        .attr('class', className)
                         .attr('font-weight', 900)
                         .attr('text-anchor', 'left');
                         
             tooltipText.append('tspan')
                         .attr('id', ttAgeID)
+                        .attr('class', className)
                         .attr("pointer-events", "none")
                         .attr('x', '5')
                         .attr('y', '5')
@@ -296,6 +302,7 @@ function Chart (props) {
             
             tooltipText.append('tspan')
                         .attr('id', ttValueID)
+                        .attr('class', className)
                         .attr("pointer-events", "none")
                         .attr('x', '5')
                         .attr('y', '5')
@@ -305,6 +312,7 @@ function Chart (props) {
                .append("rect")
                 .style('opacity', 0)
                 .attr('id', hoverLineID)
+                .attr('class', className)
                 .attr("pointer-events", "none")
                 .attr("class", "dotted")
                 .attr("stroke-width", "1px")
@@ -316,11 +324,15 @@ function Chart (props) {
         const svg = findByID(svgCycleChartID)
                       .append("g")
                       .attr("transform", marginTranslate);
+        const chartGroup = svg.append('g');
+        const tooltipGroup = svg.append('g');
 
         cleanupPrev(perRunClass);
         calcSummaryData();
-        drawChart(svg);
-        prepHoverStuff(svg);
+        drawChart(chartGroup);
+        prepHoverStuff(tooltipGroup);
+
+        // console.log('chart : e');
         // eslint-disable-next-line
     }, [
         props.portfoliovalue,
@@ -337,7 +349,7 @@ function Chart (props) {
         props.selectedbin,
     ] );
 
-    // console.log('r chart : ' + makeCurrency(medianAdjEndValueState) );
+    // console.log('chart : r');
 
     return (
         <div>

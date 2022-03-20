@@ -62,6 +62,7 @@ class SWRCalc extends React.Component {
         this.setState( {maxZoomValueState : maxZoom} );
         this.setState( {zoomColorState : colorKey} );
         this.setState( {selectedBinState : selectedBin });
+        // console.log('swrcalc : zoom');
     }
 
     render () {
@@ -278,6 +279,7 @@ class SWRCalc extends React.Component {
 
         // Calculate chart content (no actual rendering)
         calcCycles();
+        // console.log('swrcalc : r');
 
         return (
 
