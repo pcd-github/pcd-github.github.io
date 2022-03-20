@@ -10,7 +10,7 @@ const midValueColorString = 'DarkKhaki';
 const portfolioLineClass = 'portfolioline';
 const startValueMargin = 0.5;
 const thresholdValues = [0, 1 - startValueMargin, 1 + startValueMargin, 3, 20];
-const unselectedOpacity = 0.1;
+const unselectedOpacity = 0.2;
 const selectedOpacity = 1.0;
 
 export const getSelectedOpacity = () => {

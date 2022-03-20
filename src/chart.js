@@ -4,10 +4,7 @@ import * as d3 from "d3";
 import SummaryCards from "./summary.js";
 import EndValueChart from './endvaluechart.js';
 import "./chartdata.css";
-import { getSelectedOpacity, getUnselectedOpacity, makePct, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev} from './common.js';
-
-// for debugging only
-import { getAvgEquityReturn, getStdDevEquityReturn } from './histdata.js';
+import { getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency} from './common.js';
 
 function Chart (props) {
   
@@ -33,6 +30,7 @@ function Chart (props) {
     const ttWrapID = 'ttwrapper';
     const ttBackID = 'ttbackground';
     const ttAgeID = 'ttage';
+    const ttValueID = 'ttvalue';
     const margin = { top: 40, right: 65, bottom: 40, left: 65 };
     const totalWidth = 960;
     const totalHeight = 500;
@@ -42,12 +40,31 @@ function Chart (props) {
     const tooltipHeight = 75;
     const marginTranslate = "translate(" + margin.left + "," + margin.top + ")";
     const normalStrokeWidth = 1.5;
+    const boldStrokeWidth = 10;
 
     const getXScale = () => { 
         var xExt = [props.currentage, props.lifeexpectancy];
         return d3.scaleLinear()
                     .domain(xExt)
                     .range([ 0, boundedWidth ]);
+    }
+
+    const getYDomain = () => {
+        var yDom = [+(props.portmin), +(props.portmax)];
+
+        if ((null !== props.minzoom) &&
+            (null !== props.maxzoom)) {
+            yDom[0] = +(props.minzoom);
+            yDom[1] = +(props.maxzoom);
+        }
+        return yDom;
+    }
+
+    const getYScale = (rangeMin, rangeMax) => {
+        var yExt = [rangeMin, rangeMax];
+        return d3.scaleLinear()
+                    .domain(yExt)
+                    .range([ boundedHeight, 0 ]);
     }
 
     const getHoverLine = () => {
@@ -66,17 +83,8 @@ function Chart (props) {
         return findByID(ttAgeID);
     }
 
-    const handleMouseDown = (e) => {
-        var bondReturns = getBondReturns();
-        var avgBondReturns = d3.mean(bondReturns);
-        var stdBondReturns = d3.deviation(bondReturns);
-
-        console.log('equity avg return:' + 
-                    makePct(getAvgEquityReturn()) + 
-                    ' equity sdev:' + makePct(getStdDevEquityReturn()) +
-                    ' bond avg return:' + makePct(avgBondReturns) +
-                    ' bond sdev:' + makePct(stdBondReturns)
-                    );
+    const getTooltipValueSpan = () => {
+        return findByID(ttValueID);
     }
 
     const handleMouseOver = (e) => {
@@ -87,8 +95,11 @@ function Chart (props) {
     const handleMouseMove = (e) => {
         const bisect = d3.bisector((d) => d.age).left;
         var xScaleIn = getXScale();
+        var yDom = getYDomain();
+        var yScaleIn = getYScale(yDom[0], yDom[1]);
         const coords = d3.pointer(e);
         const x0 = xScaleIn.invert(coords[0]);
+        const y0 = yScaleIn.invert(coords[1]);
         const oneCycleData = props.cycledata[0];
         const i = bisect(oneCycleData, x0, 1);
         const selectedData = oneCycleData[i];
@@ -101,6 +112,8 @@ function Chart (props) {
             tooltipX = clientX - tooltipWidth;
         }
         getTooltipAgeSpan().text('age: ' + selectedData.age);
+
+        getTooltipValueSpan().text(makeCurrency(y0));
 
         const ttBounds = getTooltipWrapper().node().getBBox();
         getTooltipBackground()                
@@ -117,20 +130,6 @@ function Chart (props) {
         getHoverLine().style('opacity', 0);
         getTooltipWrapper().attr('display', 'none');
     };
-
-    const getBondReturns = () => {
-        var retVal = [];
-        const allCycleData = props.cycleData;
-
-        for (var iCycle = 0; iCycle < allCycleData.length; iCycle++) {
-            for (var year = 0; year < allCycleData[iCycle].length; year++) {
-                const oneYear = allCycleData[iCycle][year];
-                retVal.push(oneYear.bondReturn);
-            }
-        }
-
-        return retVal;
-    }
 
     const getAggReturns = (allCycleData) => {
         var retVal = [];
@@ -169,7 +168,6 @@ function Chart (props) {
 
         return (numPos / netDeltas.length);
     }
-
 
     React.useEffect(() => {
             
@@ -217,13 +215,6 @@ function Chart (props) {
             setMedianFailAgeState(d3.median(failAges));
         }
 
-        const getYScale = (rangeMin, rangeMax) => {
-            var yExt = [rangeMin, rangeMax];
-            return d3.scaleLinear()
-                        .domain(yExt)
-                        .range([ boundedHeight, 0 ]);
-        }
-        
         const drawAxes = (svg, xScaleIn, yScaleIn) => {
  
             svg.append("g")
@@ -258,22 +249,14 @@ function Chart (props) {
                 .attr("stroke-width", normalStrokeWidth)
                 .attr("d", d3.line()
                             .x(function(d) { return xScaleIn(d.age) })
-                            .y(function(d) { return yScaleIn(d.adjEndValue) })
-                );  
+                            .y(function(d) { return yScaleIn(d.adjEndValue) }));
         }
                 
         const drawChart = (svg) => {
-            var portMin = +(props.portmin);
-            var portMax = +(props.portmax);
-
-            if ((null !== props.minzoom) &&
-                (null !== props.maxzoom)) {
-                portMin = +(props.minzoom);
-                portMax = +(props.maxzoom);
-            }
 
             const xScale = getXScale();
-            const yScale = getYScale(portMin, portMax);
+            const yDom = getYDomain();
+            const yScale = getYScale(yDom[0], yDom[1]);
             const allCyclesData = props.cycledata;
             const allCyclesMeta = props.cyclemeta;
             const numCycles = +(props.numcycles);
@@ -306,10 +289,17 @@ function Chart (props) {
                         
             tooltipText.append('tspan')
                         .attr('id', ttAgeID)
+                        .attr("pointer-events", "none")
                         .attr('x', '5')
                         .attr('y', '5')
-                        .attr('dy', '15px')
-                        .attr("pointer-events", "none");
+                        .attr('dy', '15px');
+            
+            tooltipText.append('tspan')
+                        .attr('id', ttValueID)
+                        .attr("pointer-events", "none")
+                        .attr('x', '5')
+                        .attr('y', '5')
+                        .attr('dy', '35px');
     
             svg.append("g")
                .append("rect")
@@ -370,7 +360,6 @@ function Chart (props) {
                     height={boundedHeight}
                     transform={marginTranslate}
                     fill='LightGrey'
-                    onMouseDown={handleMouseDown}
                     onMouseEnter={handleMouseOver}
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
