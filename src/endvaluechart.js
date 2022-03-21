@@ -7,10 +7,12 @@ function EndValueChart (props) {
     const svgBinChartID = 'endvaluechartsvg';
     const perRunClass = getPerRunClassName() + svgBinChartID;
     const ttBinWrapID = 'ttevwrap';
+    const ttBinSelectWrapID = 'ttbinselectwrap';
     const ttBinBackID = 'ttevback';
     const ttBinRangeID = 'ttevrange';
     const ttBinPctID = 'ttevpct';
     const pathGroupID = 'pathgroupid';
+    const selectBinString = 'select a bar to zoom into its results over time';
     const totalWidth = 960;
     const totalHeight = 300;
     const tooltipWidth = 75;
@@ -165,6 +167,18 @@ function EndValueChart (props) {
             return retVal;
         }
 
+        const drawSelectionText = (svg) => {
+            const binSelectWrapper = svg.append('g')
+                                      .attr('id', ttBinSelectWrapID)
+                                      .attr("class", perRunClass);
+    
+            binSelectWrapper.append('g').append('text')
+                            .text(selectBinString)
+                            .attr("pointer-events", "none")
+                            .attr('font-weight', 900)
+                            .attr('text-anchor', 'left');
+        }
+
         const drawHistogram = (svg) => {
             const currencyThresholdValues = getCurrencyThresholds();
             const bins = createBins(currencyThresholdValues);        
@@ -182,6 +196,8 @@ function EndValueChart (props) {
             svg.append("g")
                 .attr("class", perRunClass)
                 .call(d3.axisLeft(yScale));
+            
+            drawSelectionText(svg);
                  
             var barGroup = svg.append('g')
                               .attr('class', perRunClass)
@@ -245,10 +261,12 @@ function EndValueChart (props) {
         const svg = findByID(svgBinChartID)
                       .append("g")
                       .attr("transform", marginTranslate);
+        const chartGroup = svg.append('g');
+        const tooltipGroup = svg.append('g');
 
         cleanupPrev(perRunClass);
-        drawHistogram(svg);
-        prepTooltip(svg);
+        drawHistogram(chartGroup);
+        prepTooltip(tooltipGroup);
         // console.log('bin : e');
         // eslint-disable-next-line
     }, [props.metadata, props.medianendvalue, props.startvalue, props.selectedbin, props.zoomcolor] );

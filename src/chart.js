@@ -34,7 +34,7 @@ function Chart (props) {
     const ttClass = 'tooltip';
     const margin = { top: 40, right: 65, bottom: 40, left: 65 };
     const totalWidth = 960;
-    const totalHeight = 500;
+    const totalHeight = 400;
     const boundedWidth = totalWidth - margin.left - margin.right;
     const boundedHeight = totalHeight - margin.top - margin.bottom;
     const tooltipWidth = 75;
