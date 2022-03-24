@@ -37,7 +37,7 @@ function Chart (props) {
     const boundedWidth = totalWidth - margin.left - margin.right;
     const boundedHeight = totalHeight - margin.top - margin.bottom;
     const tooltipWidth = 75;
-    const tooltipHeight = 75;
+    const tooltipHeight = 50;
     const normalStrokeWidth = 1.5;
 
     const getXScale = () => { 
@@ -286,7 +286,7 @@ function Chart (props) {
     
             tooltipText.attr("pointer-events", "none")
                         .attr('class', className)
-                        .attr('font-weight', 900)
+                        .attr('font-weight', 'bolder')
                         .attr('text-anchor', 'left');
                         
             tooltipText.append('tspan')

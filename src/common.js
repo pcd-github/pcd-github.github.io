@@ -12,7 +12,7 @@ const startValueMargin = 0.5;
 const thresholdValues = [0, 1 - startValueMargin, 1 + startValueMargin, 3, 20];
 const unselectedOpacity = 0.2;
 const selectedOpacity = 1.0;
-export const margin = { top: 20, right: 65, bottom: 20, left: 65 };
+export const margin = { top: 20, right: 65, bottom: 40, left: 65 };
 export const marginTranslate = "translate(" + margin.left + "," + margin.top + ")";
 
 export const getSelectedOpacity = () => {
