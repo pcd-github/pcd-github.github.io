@@ -2,10 +2,10 @@ import * as d3 from "d3";
 
 export const portfolioValueTextID = 'portfoliovaluetext';
 const perRunClass = 'perrundata';
-const failureColorString = 'Crimson';
+const failureColorString = 'Red';
 const lowValueColorString = 'Orange';
-const highValueColorString = 'ForestGreen';
-const maxValueColorString = 'DarkGreen';
+const highValueColorString = 'LimeGreen';
+const maxValueColorString = 'ForestGreen';
 const midValueColorString = 'DarkKhaki';
 const portfolioLineClass = 'portfolioline';
 const startValueMargin = 0.5;

@@ -16,7 +16,7 @@ function EndValueChart (props) {
     const boundedWidth = totalWidth - evMargin.left - evMargin.right;
     const boundedHeight = totalHeight - evMargin.top - evMargin.bottom; 
     const evMarginTranslate = "translate(" + evMargin.left + "," + evMargin.top + ")";   
-    const captionHeight = 100;
+    const captionHeight = 45;
 
     const calcBinMetadata = (data) => {
         const oneBinMetadata = {
@@ -27,10 +27,6 @@ function EndValueChart (props) {
         }
 
         return oneBinMetadata;
-    }
-
-    const getBinCaption = () => {
-        return findByID(svgBinCaptionID);
     }
 
     const getBinExtents = (thisBin) => {
@@ -127,18 +123,17 @@ function EndValueChart (props) {
             return retVal;
         }
 
-        const drawBinCaption = (allBinData, xScale) => {
+        const drawBinCaption = (svg, allBinData, xScale) => {
 
-            const svg = getBinCaption();
             const numCycles = props.metadata.length;
 
             // draw bin ranges below the x axis
             for (var i = 0; i < allBinData.length; i++) {
                 if (0 !== allBinData[i].length) {
                     const binMeta = calcBinMetadata(allBinData[i]);
-                    const xOffset = margin.left + ((xScale(allBinData[i].x1) - xScale(allBinData[i].x0)) / 2 );      
+                    const xOffset = ((xScale(allBinData[i].x1) - xScale(allBinData[i].x0)) / 2 );      
                     const x = xOffset + xScale(allBinData[i].x0);
-                    var y = 15; 
+                    var y = boundedHeight - captionHeight; 
                     const binRangeWrapper = svg.append('g')
                                                 .attr('id', ttBinSelectWrapID)
                                                 .attr("class", perRunClass);
@@ -224,7 +219,7 @@ function EndValueChart (props) {
                     .style("opacity", function(d) { return getBinOpacity(d.x0); } )
                     .on('mousedown', handleMouseDown);
 
-            drawBinCaption(bins, xScale);
+            drawBinCaption(svg, bins, xScale);
             drawSelectionText(svg);
         }         
 
@@ -248,14 +243,6 @@ function EndValueChart (props) {
                 height={totalHeight} 
              >
             </svg>
-            <div>
-                <svg id={svgBinCaptionID}
-                    width={boundedWidth}
-                    height={captionHeight}
-                > 
-                </svg>
-
-            </div>
 
         </div>
     );
