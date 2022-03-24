@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as d3 from "d3";
-import { getSelectedOpacity, getUnselectedOpacity, cleanupPrev, makeCurrency, makePct, getPerRunClassName, getThresholdValues, getColorStringForRelativeValue, findByID } from "./common.js";
+import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, cleanupPrev, makeCurrency, makePct, getPerRunClassName, getThresholdValues, getColorStringForRelativeValue, findByID } from "./common.js";
 
 function EndValueChart (props) {
 
@@ -12,9 +12,13 @@ function EndValueChart (props) {
     const ttBinRangeID = 'ttevrange';
     const ttBinPctID = 'ttevpct';
     const pathGroupID = 'pathgroupid';
-    const selectBinString = 'select a bar to zoom into its results over time';
+    const svgBinCaptionID = 'bincaption';
+    const selectBinString = 'select a bar to zoom to results';
     const totalWidth = 960;
-    const totalHeight = 300;
+    const totalHeight = 200;
+    const boundedWidth = totalWidth - margin.left - margin.right;
+    const boundedHeight = totalHeight - margin.top - margin.bottom;    
+    const captionHeight = 100;
     const tooltipWidth = 75;
     const tooltipHeight = 75;
 
@@ -43,6 +47,10 @@ function EndValueChart (props) {
 
     const getBinPctSpan = () => {
         return findByID(ttBinPctID);
+    }
+
+    const getBinCaption = () => {
+        return findByID(svgBinCaptionID);
     }
 
     const getBinExtents = (thisBin) => {
@@ -107,11 +115,6 @@ function EndValueChart (props) {
 
     React.useEffect(() => {
 
-        const margin = { top: 40, right: 65, bottom: 40, left: 65 };
-        const marginTranslate = "translate(" + margin.left + "," + margin.top + ")";    
-        const boundedWidth = totalWidth - margin.left - margin.right;
-        const boundedHeight = totalHeight - margin.top - margin.bottom;    
-
         const getCurrencyThresholds = () => {
             const pctThresholds = getThresholdValues();
             const currencyThresholds = [];
@@ -128,9 +131,8 @@ function EndValueChart (props) {
     
             return currencyThresholds;
         }
-    
-        const getXScaleForAxis = () => {
-            const thresholdValues = getCurrencyThresholds();
+
+        const getThresholdRange = (thresholdValues) => {
             const numThresholds = thresholdValues.length;
             var thresholdRange = [];
             var thresholdInc = boundedWidth / (numThresholds + 1);
@@ -138,6 +140,13 @@ function EndValueChart (props) {
             for (var i = 0; i <= thresholdValues.length; i++) {
                 thresholdRange[i] = i * thresholdInc;
             }
+
+            return thresholdRange;
+        }
+    
+        const getXScaleForAxis = () => {
+            const thresholdValues = getCurrencyThresholds();
+            const thresholdRange = getThresholdRange(thresholdValues);
     
             return d3.scaleThreshold()
                      .domain(thresholdValues)
@@ -167,6 +176,50 @@ function EndValueChart (props) {
             return retVal;
         }
 
+        const drawBinCaption = (allBinData, xScale) => {
+
+            const svg = getBinCaption();
+            const numCycles = props.metadata.length;
+
+            // draw bin ranges below the x axis
+            for (var i = 0; i < allBinData.length; i++) {
+                if (0 !== allBinData[i].length) {
+                    const binMeta = calcBinMetadata(allBinData[i]);
+                    const xOffset = margin.left + ((xScale(allBinData[i].x1) - xScale(allBinData[i].x0)) / 2 );      
+                    const x = xOffset + xScale(allBinData[i].x0);
+                    var y = 15; 
+                    const binRangeWrapper = svg.append('g')
+                                                .attr('id', ttBinSelectWrapID)
+                                                .attr("class", perRunClass);
+
+                    const axisText = binRangeWrapper.append('text')
+                                    .attr('y', y)
+                                    .style("font-size", "12px") 
+                                    .attr('font-weight', 'bold')
+                                    .attr('text-anchor', 'middle')                                   
+                                    .attr("pointer-events", "none");
+
+                    axisText.append('tspan')
+                                    .text(makePct(allBinData[i].length / numCycles))
+                                    .attr('x', x)
+                                    .attr('dy', '0px')
+                                    .attr("pointer-events", "none");
+                    axisText.append('tspan')
+                                    .text(makeCurrency(binMeta.extBin[0]))
+                                    .attr('x', x)
+                                    .attr('dy', '15px')
+                                    .attr("pointer-events", "none");
+                    if (binMeta.extBin[1] !== binMeta.extBin[0]) {
+                        axisText.append('tspan')
+                                .text('-' + makeCurrency(binMeta.extBin[1]))
+                                .attr('x', x)
+                                .attr('dy', '15px')
+                                .attr("pointer-events", "none");
+                    }
+                }
+            }
+        }
+
         const drawSelectionText = (svg) => {
             const binSelectWrapper = svg.append('g')
                                       .attr('id', ttBinSelectWrapID)
@@ -174,14 +227,15 @@ function EndValueChart (props) {
     
             binSelectWrapper.append('g').append('text')
                             .text(selectBinString)
+                            .attr('x', boundedWidth / 2)
                             .attr("pointer-events", "none")
-                            .attr('font-weight', 900)
-                            .attr('text-anchor', 'left');
+                            .attr('font-weight', 'bold')
+                            .attr('text-anchor', 'middle');
         }
 
         const drawHistogram = (svg) => {
             const currencyThresholdValues = getCurrencyThresholds();
-            const bins = createBins(currencyThresholdValues);        
+            const bins = createBins(currencyThresholdValues);
             const xScale = getXScaleForAxis(currencyThresholdValues);
             const yScale = d3.scaleLinear()
                              .domain([0, d3.max(bins, function(d) { return d.length; })])
@@ -192,10 +246,16 @@ function EndValueChart (props) {
             svg.append("g")
                 .attr("class", perRunClass)
                 .attr("transform", "translate(0," + boundedHeight + ")")
-                .call(d3.axisBottom(xScale));
+                .call(d3.axisBottom(xScale)
+                        .tickFormat('')
+                        .tickSize(20)
+                     );
             svg.append("g")
                 .attr("class", perRunClass)
-                .call(d3.axisLeft(yScale));
+                .call(d3.axisLeft(yScale)
+                        .tickFormat('')
+                        .tickSizeOuter(10)
+                     );
             
             drawSelectionText(svg);
                  
@@ -219,6 +279,8 @@ function EndValueChart (props) {
                     .on("mouseover", handleMouseOver)
                     .on("mouseout", handleMouseLeave)                
                     .on('mousemove', handleMouseMove);
+
+                    drawBinCaption(bins, xScale);
         }
     
         const prepTooltip = (svg) => {
@@ -280,6 +342,15 @@ function EndValueChart (props) {
                 height={totalHeight} 
              >
             </svg>
+            <div>
+                <svg id={svgBinCaptionID}
+                    width={boundedWidth}
+                    height={captionHeight}
+                > 
+                </svg>
+
+            </div>
+
         </div>
     );
 };

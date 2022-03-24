@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import SummaryCards from "./summary.js";
 import EndValueChart from './endvaluechart.js';
 import "./chartdata.css";
-import { getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency} from './common.js';
+import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency} from './common.js';
 
 function Chart (props) {
   
@@ -32,16 +32,13 @@ function Chart (props) {
     const ttAgeID = 'ttage';
     const ttValueID = 'ttvalue';
     const ttClass = 'tooltip';
-    const margin = { top: 40, right: 65, bottom: 40, left: 65 };
     const totalWidth = 960;
     const totalHeight = 400;
     const boundedWidth = totalWidth - margin.left - margin.right;
     const boundedHeight = totalHeight - margin.top - margin.bottom;
     const tooltipWidth = 75;
     const tooltipHeight = 75;
-    const marginTranslate = "translate(" + margin.left + "," + margin.top + ")";
     const normalStrokeWidth = 1.5;
-    // const boldStrokeWidth = 10;
 
     const getXScale = () => { 
         var xExt = [props.currentage, props.lifeexpectancy];
@@ -224,7 +221,7 @@ function Chart (props) {
                 .call(d3.axisBottom(xScaleIn));
             svg.append("g")
                 .attr("class", perRunClass)
-                .call(d3.axisLeft(yScaleIn));
+                .call(d3.axisLeft(yScaleIn).tickFormat(d3.format('$,')));
         };
     
         const drawPortfolioLine = (svg, xScaleIn, yScaleIn, oneCycleMeta, oneCycle) => {

@@ -1,5 +1,66 @@
 # pcd-github.github.io
 
+SWRVE is a 'safe withdrawal rate calculator' aimed at 
+providing a straightforward, efficent way to determine how much 
+you can withdraw from savings over time without running out of money.
+
+The summary cards, results chart, and result bars on the right reflect
+whatever the inputs provided on the left give you.
+
+# Inputs
+Age and Life Expectancy reflect how long you need your funds to last.
+
+Portfolio Value reflects the total amount saved.
+
+Annual Spend is what your wanting (or needing) to live as you want.  Currently
+the calulator is limited to inflation-adjusted only.  I may do fixed % when time 
+permits.
+
+The Stock/Bond asset mix slider is how you've allocated your savings.  
+It does not permit you to allocate a lot into cash, gold, or other 
+commodities.  Maybe I'll expand this over time.
+
+Annual fee % is what you're paying someone for the privilege of holding
+(or managing) your money.  The default (low) value reflects my own bias towards 
+low-cost index funds and ETFs.
+
+Historical data range determines which years we apply to your historically
+based results.  This allows you to emulate past patterns of bull/bear markets 
+and inflation.  The per-year results are based on Robert Shiller's historical
+data (http://www.econ.yale.edu/~shiller/data.htm), which a number of similar 
+calculators have also used.  They also assume broad index/ETF investment
+strategy - using a subset of the options (as in managed or sector) funds could
+yield significantly different results.
+
+One other note about the historical data - Currently, the years are applied 
+sequentially only.  This will limit the number of cycles run to be
+(end year - start year) - lifetime.  This is why the number of cycles (and lines
+in the chart) change when you tweak the historical range, life expectancy, or 
+age.  I'm considering adding monte carlo simulation down the road.
+
+You can choose to include social security, starting at age 62, 67, or 70.  There 
+are currently no other options for incorporating additional income.
+
+# Results
+The summary cards at the top give a very high-levle overview of what your inputs
+will give you.  I've kept this pretty concise, as I visual data speaks to me 
+more.
+
+Success rate is the first thing people tend to look at.  Given market fluctuation, 
+I thought it useful to see what one might expect for net-positive years too.  This is whether you're up or down in overall value from the previous year, factoring your net returns and total spending.  The minimum/median failure ages also seem useful.
+
+End value and combined return % (given your asset allocation) round out the summary data.
+
+The multi-line chart with different colors shows what the individual cycles using historic data look like with your inputs.  The colors (from green to red) reflect the end value of your portfolio.  At this writing the colors mean this :
+
+Dark Green : 3-20x of the original value
+Lighter Green : 1.5-3x of original value
+Light Olive : 0.5-1.5 of original value
+Orange : Between $0.01 and 50% of original value
+Red : 0 (or failures)
+
+The bin chart at the bottom can be useful for looking at the categories of results - good to bad.  Selecting a 'bin' will zoom the line chart into that category of result.  Hovering over a bin will tell you what % of overall results as well as the range of values is in each bin.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
