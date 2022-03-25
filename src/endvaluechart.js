@@ -8,7 +8,6 @@ function EndValueChart (props) {
     const perRunClass = getPerRunClassName() + svgBinChartID;
     const ttBinSelectWrapID = 'ttbinselectwrap';
     const pathGroupID = 'pathgroupid';
-    const svgBinCaptionID = 'bincaption';
     const selectBinString = 'select a bar to zoom to results';
     const totalWidth = 960;
     const totalHeight = 200;
@@ -217,7 +216,7 @@ function EndValueChart (props) {
                     .attr("height", function(d) { return boundedHeight - yScale(d.length); })
                     .style("fill",  function(d) { return getColorStringForRelativeValue(d.x0 / props.startvalue);})
                     .style("opacity", function(d) { return getBinOpacity(d.x0); } )
-                    .on('mousedown', handleMouseDown);
+                    .on('click', handleMouseDown);
 
             drawBinCaption(svg, bins, xScale);
             drawSelectionText(svg);

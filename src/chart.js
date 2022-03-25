@@ -20,9 +20,9 @@ function Chart (props) {
     const [maxReturnsState, setMaxReturnsState] = useState(0);
 
     const [pctPositiveNetState, setPctPositiveNetState] = useState(0);
+    const [numGreaterThanStartState, setNumGreaterThanStartState] = useState(0);
     const [numFailsState, setNumFailsState] = useState(0);
     const [minFailAgeState, setMinFailAgeState] = useState(0);
-    const [medianFailAgeState, setMedianFailAgeState] = useState(0);
 
     const svgCycleChartID = 'd3cycletarget';
     const perRunClass = getPerRunClassName() + svgCycleChartID;
@@ -185,12 +185,17 @@ function Chart (props) {
             var netDeltas = getNetDeltas(allCycles);
             var pctPositiveNet = getPctPositiveNet(netDeltas);
     
+            var numGreaterThanStart = 0;
             var numFails = 0;
             var minFailAge = props.lifeexpectancy + 1;
             var failAges = [];
     
             for (var i = 0; i < allCyclesMeta.length; i++) {
-                if (allCyclesMeta[i].fail) {
+                if (1 < (allCyclesMeta[i].pctOfStart)) {
+                    numGreaterThanStart++;
+                }
+                // look at failure cycles
+                else if (allCyclesMeta[i].fail) {
                     minFailAge = Math.min(allCyclesMeta[i].failAge, minFailAge);
                     failAges[numFails] = allCyclesMeta[i].failAge;
                     numFails++;
@@ -209,8 +214,8 @@ function Chart (props) {
     
             setPctPositiveNetState(pctPositiveNet);
             setNumFailsState(numFails);
+            setNumGreaterThanStartState(numGreaterThanStart);
             setMinFailAgeState(minFailAge);
-            setMedianFailAgeState(d3.median(failAges));
         }
 
         const drawAxes = (svg, xScaleIn, yScaleIn) => {
@@ -352,7 +357,8 @@ function Chart (props) {
         <div>
             <SummaryCards 
              fails={numFailsState} cycles={props.numcycles}
-             minfailage={minFailAgeState} medianfailage={medianFailAgeState} 
+             numgreaterthanstart={numGreaterThanStartState}
+             minfailage={minFailAgeState} 
              medianendvalue={medianAdjEndValueState} avgendvalue={avgAdjEndValueState}
              minendvalue={minAdjEndValueState} maxendvalue={maxAdjEndValueState}
              medianreturns={medianReturnsState} avgreturns={avgReturnsState}

@@ -23,10 +23,13 @@ function SummaryCards (props) {
                             {makePct(1 - (props.fails / props.cycles))} success ({props.cycles - props.fails} / {props.cycles})
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
+                            Ending greater than start value : {makePct(props.numgreaterthanstart / props.cycles)}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
                             { makePct(props.netpositivepct)} net positive years 
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            Median failure age : {props.medianfailage} Minimum failure age : {props.minfailage}
+                            Minimum failure age : {props.minfailage}
                         </Typography>
                     </CardContent>
                 </Card>
