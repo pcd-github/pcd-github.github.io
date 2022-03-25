@@ -23,9 +23,6 @@ function SummaryCards (props) {
                             {makePct(1 - (props.fails / props.cycles))} success ({props.cycles - props.fails} / {props.cycles})
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            Ending greater than start value : {makePct(props.numgreaterthanstart / props.cycles)}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
                             { makePct(props.netpositivepct)} net positive years 
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
@@ -37,6 +34,9 @@ function SummaryCards (props) {
                     <CardContent>
                         <Typography gutterBottom variant="h6" component="h2">
                             End Value ($)
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            {makePct(props.numgreaterthanstart / props.cycles)} finished greater than started
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             median : {makeCurrency(props.medianendvalue)}

@@ -254,6 +254,19 @@ function Chart (props) {
                             .x(function(d) { return xScaleIn(d.age) })
                             .y(function(d) { return yScaleIn(d.adjEndValue) }));
         }
+
+        const drawReferenceLine = (svg, yScale) => {
+            svg.append('rect')
+               .attr('class', perRunClass)
+               .style('stroke-dasharray', '10, 5')
+               .attr('fill', 'none')
+               .attr('stroke', 'black')
+               .attr("stroke-width", normalStrokeWidth)
+               .attr('x', 0)
+               .attr('y', yScale(props.portfoliovalue))
+               .attr('width', boundedWidth)
+               .attr('height', 0.25);
+        }
                 
         const drawChart = (svg) => {
 
@@ -268,6 +281,7 @@ function Chart (props) {
             for (var i = 0; i < numCycles; i++) {
                 drawPortfolioLine(svg, xScale, yScale, allCyclesMeta[i], allCyclesData[i]);
             }
+            drawReferenceLine(svg, yScale);
         }    
 
         const prepHoverStuff = (svg) => {
