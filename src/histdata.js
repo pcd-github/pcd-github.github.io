@@ -638,11 +638,11 @@ export const histData = [
         year:2020, cpi: 257.9710, dividends: 0.01790,
         bonds: 0.01760, gold: 0, equity: 0.157265
     },
-    /*
     {
-        year:2021, cpi: 261.58, dividends: ,
-        bonds: 0.0108, gold: 0, equity: 
+        year:2021, cpi: 261.58, dividends: 0.0153,
+        bonds: 0.0108, gold: 0, equity: 0.2056  
     },
+    /*
     {
         year:2022, cpi: 281.15, dividends: ,
         bonds: 0.01760, gold: 0, equity: 

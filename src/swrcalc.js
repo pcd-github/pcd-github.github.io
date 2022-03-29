@@ -28,8 +28,8 @@ const defaultSpendValue = 50000;
 const defaultStocks = 80;
 const defaultFeePct = 0.18;
 const defaultSSIncome = 39312;
-const defaultStartDataYear = 1871;
-const defaultEndDataYear = 2020;
+const defaultStartDataYear = histData[0].year;
+const defaultEndDataYear = histData[histData.length - 1].year;
 const chartCompID = 'chartComponent';
 
 class SWRCalc extends React.Component {
