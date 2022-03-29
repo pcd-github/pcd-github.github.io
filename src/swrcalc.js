@@ -250,7 +250,7 @@ class SWRCalc extends React.Component {
                 'medAggReturn': medAggReturn,
                 'fail': (0 >= oneCycle[oneCycle.length - 1].adjEndValue),
                 'failAge': (0 >= oneCycle[oneCycle.length - 1].adjEndValue) ? 
-                           (oneCycle.length + this.state.currentAgeState) :
+                           (oneCycle[oneCycle.length - 1].age) :
                            undefined,
                 'startYear': oneCycle[0].year,
                 'cycleData': oneCycle,
