@@ -33,10 +33,10 @@ function SummaryCards (props) {
                 <Card>
                     <CardContent>
                         <Typography gutterBottom variant="h6" component="h2">
-                            End Value ($)
+                            Inflation Adjusted End Value ($)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            {makePct(props.numgreaterthanstart / props.cycles)} finished greater than started
+                            {makePct(props.numgreaterthanstart / props.cycles)} cycles finished higher than started
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             median : {makeCurrency(props.medianendvalue)}
