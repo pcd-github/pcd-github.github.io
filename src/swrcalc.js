@@ -145,13 +145,62 @@ class SWRCalc extends React.Component {
             return retVal;
         }        
 
-        const runCycle = (startIndex, numYears) => {
-            var cycleData = [];
-            const stockPct = this.state.stockAllocPctState / 100;
-            const bondPct = (100 - this.state.stockAllocPctState) / 100;
-            const feePct = this.state.feePctState / 100;
+        const applySpend = (thisCycle) => {
             const ssAge = this.state.socialSecurityAgeState;
             const ssIncome = (this.state.ssOnState) ? this.state.socialSecurityIncomeState : 0;
+
+            // get current spend (currently fixed)
+            thisCycle.spend = this.state.spendValueState;
+            // adjust spend for cumultative cpi
+            thisCycle.actualSpend = thisCycle.spend * thisCycle.cumulativeCPI;
+            // apply ss adjustment if applicable
+            var adjustment = (ssAge <= thisCycle.age) ? (ssIncome * thisCycle.cumulativeCPI) : 0;
+            thisCycle.actualSpend -= adjustment;
+            // subtract spend from start value
+            thisCycle.endValue = thisCycle.beginValue - thisCycle.actualSpend;
+        }
+
+        const applyAppreciation = (thisCycle, cycleNum) => {
+            const stockPct = this.state.stockAllocPctState / 100;
+            const bondPct = (100 - this.state.stockAllocPctState) / 100;
+            const startStockValue = thisCycle.endValue * stockPct;
+
+            // e growth = port1 * e-share * e-growth
+            thisCycle.equityAppr = startStockValue * thisCycle.equityReturn;
+
+            // calc dividends
+            thisCycle.divAppr = startStockValue * histData[cycleNum].dividends;
+            // b growth = port1 * b=share * b-growth
+            thisCycle.bondAppr = calcBondYield(thisCycle.endValue * bondPct, cycleNum);
+            thisCycle.bondReturn = thisCycle.bondAppr / (thisCycle.beginValue * bondPct);
+            thisCycle.aggReturn = calcAnnualAggReturn(thisCycle, stockPct, bondPct);
+
+            // port2 = port1 + e-growth + b-growth
+            thisCycle.appr = thisCycle.equityAppr + thisCycle.divAppr + thisCycle.bondAppr;
+            thisCycle.endValue += thisCycle.appr;
+
+            // used for informational purposes later
+            thisCycle.adjAppr = thisCycle.appr / thisCycle.cumulativeCPI;
+        }
+
+        const applyFees = (thisCycle) => {
+            const feePct = this.state.feePctState / 100;
+            // end port = port2 - (fees (based on cpi-adj value ?? ))
+            thisCycle.fees = (thisCycle.beginValue + thisCycle.appr) * feePct;
+            thisCycle.endValue -= thisCycle.fees;
+        }
+
+        const calcNetDelta = (thisCycle) => {
+            // appreciation less spend and fees.
+            thisCycle.netDelta = thisCycle.appr - thisCycle.actualSpend - thisCycle.fees;
+        }
+
+        const calcAdjustedEndValue = (thisCycle) => {
+            thisCycle.adjEndValue = thisCycle.endValue / thisCycle.cumulativeCPI;
+        }
+
+        const runCycle = (startIndex, numYears) => {
+            var cycleData = [];
             const startCPI = histData[startIndex].cpi;
     
             for(var i = 0; i < numYears; i++){
@@ -159,64 +208,39 @@ class SWRCalc extends React.Component {
                             "age": this.state.currentAgeState + i,
                             "beginValue": (i > 0) ? cycleData[i - 1].endValue : this.state.portfolioValueState,
                             "equityReturn": histData[startIndex + i].equity,
+                            "cumulativeCPI": histData[startIndex + i].cpi / startCPI,
+                            "spend": 0,
+                            "endValue": 0,
+                            // the rest of these fields are not updated when a failure is detected
                             "equityAppr": 0,
                             "divAppr": 0,
                             "bondReturn": 0,
                             "bondAppr": 0,
                             "aggReturn": 0,
-                            "cumulativeCPI": histData[startIndex + i].cpi / startCPI,
-                            "spend": this.state.spendValueState,
-                            "actualSpend": this.state.spendValueState,
+                            "actualSpend": 0,
                             "fees": 0,
                             "netDelta": 0,
-                            "endValue": 0,
                             "adjEndValue": 0,
                             "appr": 0,
                             "adjAppr": 0,
                           };
-                // adjust spend for cumultative cpi
-                obj.actualSpend = obj.spend * obj.cumulativeCPI;
-                // apply ss adjustment if applicable
-                var adjustment = (ssAge <= obj.age) ? (ssIncome * obj.cumulativeCPI) : 0;
-                obj.actualSpend -= adjustment;
-                // port1 = subtract spend from start port
-                obj.endValue = obj.beginValue - obj.actualSpend;
-                if (0 < obj.endValue) {
-                    var startStockValue = obj.endValue * stockPct;
-                    // e growth = port1 * e-share * e-growth
-                    obj.equityAppr = startStockValue * obj.equityReturn;
-                    // calc dividends
-                    obj.divAppr = startStockValue * histData[startIndex + i].dividends;
-                    // b growth = port1 * b=share * b-growth
-                    obj.bondAppr = calcBondYield(obj.endValue * bondPct, startIndex + i);
-                    obj.bondReturn = obj.bondAppr / (obj.beginValue * bondPct);
-                    obj.aggReturn = calcAnnualAggReturn(obj, stockPct, bondPct);
-                    // port2 = port1 + e-growth + b-growth
-                    obj.appr = obj.equityAppr + obj.divAppr + obj.bondAppr;
-                    obj.endValue += obj.appr;
-                    // end port = port2 - (fees (based on cpi-adj value))
-                    obj.fees = (obj.beginValue + obj.appr) * feePct;
-                    obj.endValue -= obj.fees;
-    
-                    // total +/- for the year
-                    obj.netDelta = obj.appr - obj.actualSpend - obj.fees;
-    
-                    /*
-                    console.log('y:' + obj.year + ' agg%:' + makePct(obj.aggReturn) + 
-                                ' appr$:' + makeCurrency(obj.appr) + 
-                                ' spend+fee$:' + makeCurrency((obj.actualSpend + obj.fees)) + 
-                                ' delta$' + makeCurrency(obj.netDelta));
-                                */
-    
-                    obj.adjEndValue = obj.endValue / obj.cumulativeCPI;
-                    obj.adjAppr = obj.appr / obj.cumulativeCPI;
-                    cycleData.push(obj);
-                }
-                else {
+                // get spend adjusted for inflation and ss benefits
+                applySpend(obj);
+
+                // detect failure (out of funds), and terminate cycle.
+                if (0 >= obj.endValue) {
                     obj.endValue = obj.adjEndValue = 0;
                     cycleData.push(obj);
                     break;
                 }
+
+                applyAppreciation(obj, startIndex + i);
+                applyFees(obj);
+                // net delta is for informational purposes used later
+                calcNetDelta (obj);
+                calcAdjustedEndValue(obj);
+
+                cycleData.push(obj);
             }
             return cycleData;
         }
