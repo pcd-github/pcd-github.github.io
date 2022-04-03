@@ -187,7 +187,7 @@ function Chart (props) {
     
             var numGreaterThanStart = 0;
             var numFails = 0;
-            var minFailAge = props.lifeexpectancy + 1;
+            var minFailAge = Number.POSITIVE_INFINITY;
             var failAges = [];
     
             for (var i = 0; i < allCyclesMeta.length; i++) {

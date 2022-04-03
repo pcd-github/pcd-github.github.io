@@ -20,13 +20,16 @@ function SummaryCards (props) {
                             Summary Results
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            {makePct(1 - (props.fails / props.cycles))} success ({props.cycles - props.fails} / {props.cycles})
+                            {makePct(1 - (props.fails / props.cycles))} success ({props.cycles - props.fails} / {props.cycles} cycles)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            { makePct(props.netpositivepct)} net positive years 
+                            {makePct(props.numgreaterthanstart / props.cycles)} of cycles ended with more $$ than started
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            Minimum failure age : {props.minfailage}
+                            { makePct(props.netpositivepct)} of years had higher appreciation than spend (over all cycles)
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            Minimum failure age : {(Number.POSITIVE_INFINITY === props.minfailage) ? 'n/a' : props.minfailage}
                         </Typography>
                     </CardContent>
                 </Card>
@@ -36,16 +39,13 @@ function SummaryCards (props) {
                             Inflation Adjusted End Value ($)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            {makePct(props.numgreaterthanstart / props.cycles)} cycles finished higher than started
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
                             median : {makeCurrency(props.medianendvalue)}
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             mean : {makeCurrency(props.avgendvalue)}
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                        min : {makeCurrency(props.minendvalue)} max : {makeCurrency(props.maxendvalue)}
+                            max : {makeCurrency(props.maxendvalue)}
                         </Typography>
                     </CardContent>
                 </Card>
@@ -61,7 +61,7 @@ function SummaryCards (props) {
                             mean : { makePct(props.avgreturns) }
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                        min : { makePct(props.minreturns) } max : { makePct(props.maxreturns) }
+                            min: { makePct(props.minreturns) } max : { makePct(props.maxreturns) }
                         </Typography>
                     </CardContent>
                 </Card>  
