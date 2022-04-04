@@ -10,9 +10,11 @@ function Chart (props) {
   
     // TODO review all chart state vars after refactoring
     const [avgAdjEndValueState, setAvgAdjEndValueState] = useState(0);
-    const [medianAdjEndValueState, setMedianAdjEndValueState] = useState(0);
-    const [minAdjEndValueState, setMinAdjEndValueState] = useState(0);
     const [maxAdjEndValueState, setMaxAdjEndValueState] = useState(0);
+
+    const [quantile25EndValueState, setQuantile25AdjEndValueState] = useState(0);
+    const [quantile50EndValueState, setQuantile50AdjEndValueState] = useState(0);
+    const [quantile75EndValueState, setQuantile75AdjEndValueState] = useState(0);
 
     const [avgReturnsState, setAvgReturnsState] = useState(0);
     const [medianReturnsState, setMedianReturnsState] = useState(0);
@@ -175,8 +177,11 @@ function Chart (props) {
     
             var extAdjEnd = d3.extent(allCyclesMeta, (d) => d.adjEndCycleValue);
             var avgAdjEnd = d3.mean(allCyclesMeta, (d) => d.adjEndCycleValue);
-            var medAdjEnd = d3.median(allCyclesMeta, (d) => d.adjEndCycleValue);
-    
+
+            var quantile25 = d3.quantile(allCyclesMeta, 0.25, (d) => d.adjEndCycleValue);
+            var quantile50 = d3.quantile(allCyclesMeta, 0.50, (d) => d.adjEndCycleValue);
+            var quantile75 = d3.quantile(allCyclesMeta, 0.75, (d) => d.adjEndCycleValue);
+
             var aggReturns = getAggReturns(allCycles);
             var avgReturns = d3.mean(aggReturns);
             var medianReturns = d3.median(aggReturns);
@@ -203,9 +208,11 @@ function Chart (props) {
             }
     
             setAvgAdjEndValueState(avgAdjEnd);
-            setMedianAdjEndValueState(medAdjEnd);
-            setMinAdjEndValueState(extAdjEnd[0]);
             setMaxAdjEndValueState(extAdjEnd[1]);
+
+            setQuantile25AdjEndValueState(quantile25);
+            setQuantile50AdjEndValueState(quantile50);
+            setQuantile75AdjEndValueState(quantile75);
     
             setAvgReturnsState(avgReturns);
             setMedianReturnsState(medianReturns);
@@ -373,8 +380,11 @@ function Chart (props) {
              fails={numFailsState} cycles={props.numcycles}
              numgreaterthanstart={numGreaterThanStartState}
              minfailage={minFailAgeState} 
-             medianendvalue={medianAdjEndValueState} avgendvalue={avgAdjEndValueState}
-             minendvalue={minAdjEndValueState} maxendvalue={maxAdjEndValueState}
+             avgendvalue={avgAdjEndValueState}
+             quantile25endvalue={quantile25EndValueState}
+             quantile50endvalue={quantile50EndValueState}
+             quantile75endvalue={quantile75EndValueState}
+             maxendvalue={maxAdjEndValueState}
              medianreturns={medianReturnsState} avgreturns={avgReturnsState}
              minreturns={minReturnsState} maxreturns={maxReturnsState}
              netpositivepct={pctPositiveNetState}
@@ -396,9 +406,6 @@ function Chart (props) {
             </svg>  
             <EndValueChart 
              startvalue={props.portfoliovalue} 
-             minendvalue={minAdjEndValueState} 
-             maxendvalue={maxAdjEndValueState} 
-             medianendvalue={medianAdjEndValueState}
              metadata={props.cyclemeta} 
              cyclechartid={svgCycleChartID} 
              zoomcallback={props.zoomcallback}

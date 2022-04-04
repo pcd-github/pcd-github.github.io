@@ -231,7 +231,7 @@ function EndValueChart (props) {
         drawHistogram(chartGroup);
         // console.log('bin : e');
         // eslint-disable-next-line
-    }, [props.metadata, props.medianendvalue, props.startvalue, props.selectedbin, props.zoomcolor] );
+    }, [props.metadata, props.startvalue, props.selectedbin, props.zoomcolor] );
 
     // console.log('bin : r');
 
