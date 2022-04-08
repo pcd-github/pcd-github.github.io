@@ -41,6 +41,7 @@ function Chart (props) {
     const tooltipWidth = 75;
     const tooltipHeight = 50;
     const normalStrokeWidth = 1.5;
+    const boldStrokeWidth = 5;
 
     const getXScale = () => { 
         var xExt = [props.currentage, props.lifeexpectancy];
@@ -90,6 +91,9 @@ function Chart (props) {
     const handleMouseOver = (e) => {
         getHoverLine().style('opacity', 1);
         getTooltipWrapper().attr('display', null);
+
+        var currLine = d3.select(e.currentTarget);
+        currLine.attr("stroke-width", boldStrokeWidth);
     }
 
     const handleMouseMove = (e) => {
@@ -126,9 +130,12 @@ function Chart (props) {
         getTooltipWrapper().attr('x', tooltipX);
     };
     
-    const handleMouseLeave = () => {
+    const handleMouseLeave = (e) => {
         getHoverLine().style('opacity', 0);
         getTooltipWrapper().attr('display', 'none');
+
+        var currLine = d3.select(e.currentTarget);
+        currLine.attr("stroke-width", normalStrokeWidth);
     };
 
     const getAggReturns = (allCycleData) => {
@@ -253,10 +260,12 @@ function Chart (props) {
                 .attr('id', oneCycleMeta.startYear)
                 .attr('class', classNames)
                 .attr("fill", "none")
-                .attr("pointer-events", "none")
                 .style("opacity", lineOpacity)
                 .attr("stroke", oneCycleMeta.lineColor)
                 .attr("stroke-width", normalStrokeWidth)
+                .on('mouseenter', handleMouseOver)
+                .on('mouseover', handleMouseMove)
+                .on('mouseleave', handleMouseLeave)
                 .attr("d", d3.line()
                             .x(function(d) { return xScaleIn(d.age) })
                             .y(function(d) { return yScaleIn(d.adjEndValue) }));
@@ -310,8 +319,8 @@ function Chart (props) {
     
             const tooltipText = tooltipWrapper.append('g').append('text');
     
-            tooltipText.attr("pointer-events", "none")
-                        .attr('class', className)
+            tooltipText.attr('class', className)
+                        .attr("pointer-events", "none")
                         .attr('font-weight', 'bolder')
                         .attr('text-anchor', 'left');
                         
@@ -393,16 +402,6 @@ function Chart (props) {
                     width={totalWidth}
                     height={totalHeight} 
             >
-                <rect id='trackingRect'
-                    style={{ opacity:0 }}
-                    width={boundedWidth}
-                    height={boundedHeight}
-                    transform={marginTranslate}
-                    fill='LightGrey'
-                    onMouseEnter={handleMouseOver}
-                    onMouseMove={handleMouseMove}
-                    onMouseLeave={handleMouseLeave}
-                />
             </svg>  
             <EndValueChart 
              startvalue={props.portfoliovalue} 

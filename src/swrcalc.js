@@ -165,17 +165,12 @@ class SWRCalc extends React.Component {
             const bondPct = (100 - this.state.stockAllocPctState) / 100;
             const startStockValue = thisCycle.endValue * stockPct;
 
-            // e growth = port1 * e-share * e-growth
             thisCycle.equityAppr = startStockValue * thisCycle.equityReturn;
-
-            // calc dividends
             thisCycle.divAppr = startStockValue * histData[cycleNum].dividends;
-            // b growth = port1 * b=share * b-growth
             thisCycle.bondAppr = calcBondYield(thisCycle.endValue * bondPct, cycleNum);
             thisCycle.bondReturn = thisCycle.bondAppr / (thisCycle.beginValue * bondPct);
             thisCycle.aggReturn = calcAnnualAggReturn(thisCycle, stockPct, bondPct);
 
-            // port2 = port1 + e-growth + b-growth
             thisCycle.appr = thisCycle.equityAppr + thisCycle.divAppr + thisCycle.bondAppr;
             thisCycle.endValue += thisCycle.appr;
 
@@ -185,13 +180,12 @@ class SWRCalc extends React.Component {
 
         const applyFees = (thisCycle) => {
             const feePct = this.state.feePctState / 100;
-            // end port = port2 - (fees (based on cpi-adj value ?? ))
+
             thisCycle.fees = (thisCycle.beginValue + thisCycle.appr) * feePct;
             thisCycle.endValue -= thisCycle.fees;
         }
 
         const calcNetDelta = (thisCycle) => {
-            // appreciation less spend and fees.
             thisCycle.netDelta = thisCycle.appr - thisCycle.actualSpend - thisCycle.fees;
         }
 
