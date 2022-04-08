@@ -249,10 +249,16 @@ function Chart (props) {
                                 + getPortfolioLineClassName() + ' ' 
                                 + oneCycleMeta.lineColor;
             var lineOpacity = getSelectedOpacity();
+            var enterHandler = handleMouseOver;
+            var hoverHandler = handleMouseMove;
+            var leaveHandler = handleMouseLeave;
 
             if ((null != props.zoomcolor) && 
                 (props.zoomcolor !== oneCycleMeta.lineColor)) {
                 lineOpacity = getUnselectedOpacity();
+                enterHandler = null;
+                hoverHandler = null;
+                leaveHandler = null;
             }
 
             svg.append("path")
@@ -263,9 +269,9 @@ function Chart (props) {
                 .style("opacity", lineOpacity)
                 .attr("stroke", oneCycleMeta.lineColor)
                 .attr("stroke-width", normalStrokeWidth)
-                .on('mouseenter', handleMouseOver)
-                .on('mouseover', handleMouseMove)
-                .on('mouseleave', handleMouseLeave)
+                .on('mouseenter', enterHandler)
+                .on('mouseover', hoverHandler)
+                .on('mouseleave', leaveHandler)
                 .attr("d", d3.line()
                             .x(function(d) { return xScaleIn(d.age) })
                             .y(function(d) { return yScaleIn(d.adjEndValue) }));
