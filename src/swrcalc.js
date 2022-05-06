@@ -31,6 +31,8 @@ const defaultSSIncome = 39312;
 const defaultStartDataYear = histData[0].year;
 const defaultEndDataYear = histData[histData.length - 1].year;
 const chartCompID = 'chartComponent';
+const monteCarloString = 'montecarlo';
+const historicalString = 'historical';
 
 class SWRCalc extends React.Component {
 
@@ -44,6 +46,7 @@ class SWRCalc extends React.Component {
             spendModelState: 'dollars',
             stockAllocPctState: defaultStocks,
             feePctState: defaultFeePct,
+            monteCarloProjectionState: false,
             ssOnState: false,
             socialSecurityIncomeState: defaultSSIncome,
             socialSecurityAgeState: 67,
@@ -67,8 +70,19 @@ class SWRCalc extends React.Component {
 
     render () {
 
+        const getNumberOfCycles = (lifespan) => {
+            var retVal = (this.state.endDataYearState - this.state.startDataYearState + 2) 
+                          - lifespan;
+    
+//            if (this.state.monteCarloProjectionState) {
+//                retVal = 10000;
+//            }
+    
+            return retVal;
+        }    
+
         const lifetime = this.state.lifeExpectancyState - this.state.currentAgeState + 1;
-        const numCycles = (this.state.endDataYearState - this.state.startDataYearState + 2) - lifetime;
+        const numCycles = getNumberOfCycles(lifetime);
         var portMin = this.state.portfolioValueState;
         var portMax = this.state.portfolioValueState;
         var allCycles = [];
@@ -115,6 +129,11 @@ class SWRCalc extends React.Component {
         const handleSocialSecurityIncomeChange = (event) => {
             var newValue = +(event.target.value);
             this.setState( { socialSecurityIncomeState : newValue });
+        }
+
+        const handleProjectionToggle = (event, newValue) => {
+            console.log('toggle projection:' + newValue);
+            this.setState({monteCarloProjectionState : (monteCarloString === newValue) } );
         }
 
         const handleDataRangeChange = (event, newValue) => {
@@ -280,7 +299,6 @@ class SWRCalc extends React.Component {
 
         const calcCycles = () => {
 
-            // TODO : require numCycles to be greater than zero
             const startIndex = findHistStartIndex(this.state.startDataYearState);
 
             for (var i = 0; i < numCycles; i++) {
@@ -295,7 +313,6 @@ class SWRCalc extends React.Component {
             }
         }
 
-        // Calculate chart content (no actual rendering)
         calcCycles();
         // console.log('swrcalc : r');
 
@@ -368,17 +385,33 @@ class SWRCalc extends React.Component {
                                     onChange={handleFeePctChange} />
                                 </ListItem>
                                 <ListItem>
-                                    <div>Historical data from {this.state.startDataYearState} to {this.state.endDataYearState}</div>                                 
-                                </ListItem>
-                                <ListItem> 
-                                    <Slider  
-                                    marks step={1}
-                                    min={defaultStartDataYear} max={defaultEndDataYear}
-                                    defaultValue={[defaultStartDataYear, defaultEndDataYear]}
-                                    valueLabelDisplay="auto"                                     
-                                    onChange={handleDataRangeChange}
-                                    />
-
+                                    <Accordion>
+                                        <AccordionSummary>
+                                            <FormControl>
+                                                <RadioGroup
+                                                    aria-labelledby="projectionTypeID"
+                                                    defaultValue="historical"
+                                                    name="radio-buttons-group"
+                                                    row
+                                                    onChange={handleProjectionToggle}
+                                                >
+                                                    <FormControlLabel value={historicalString} control={<Radio />} label="historical" />
+                                                    <FormControlLabel value={monteCarloString} control={<Radio />} label="monte carlo" />
+                                                </RadioGroup>
+                                            </FormControl>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <div disabled={this.state.monteCarloProjectionState}>Historical data from {this.state.startDataYearState} to {this.state.endDataYearState}</div>                                 
+                                            <Slider  
+                                            disabled={this.state.monteCarloProjectionState}
+                                            marks step={1}
+                                            min={defaultStartDataYear} max={defaultEndDataYear}
+                                            defaultValue={[defaultStartDataYear, defaultEndDataYear]}
+                                            valueLabelDisplay="auto"                                     
+                                            onChange={handleDataRangeChange}
+                                            />
+                                        </AccordionDetails>
+                                    </Accordion>
                                 </ListItem>
                                 <ListItem >
                                     <Accordion>
