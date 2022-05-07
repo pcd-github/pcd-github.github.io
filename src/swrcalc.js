@@ -16,7 +16,7 @@ import { RadioGroup } from "@mui/material";
 import { Radio } from "@mui/material";
 import { Stack } from "@mui/material";
 import { histData } from "./histdata.js";
-import { calcBondYield, findHistStartIndex } from "./histdata.js";
+import { findHistStartIndex } from "./histdata.js";
 import { makePct, getColorStringForRelativeValue } from './common.js';
 import Chart from './chart.js';
 
@@ -33,6 +33,7 @@ const defaultEndDataYear = histData[histData.length - 1].year;
 const chartCompID = 'chartComponent';
 const monteCarloString = 'montecarlo';
 const historicalString = 'historical';
+const defaultMonteCarloCycles = 10000;
 
 class SWRCalc extends React.Component {
 
@@ -75,7 +76,7 @@ class SWRCalc extends React.Component {
                           - lifespan;
     
 //            if (this.state.monteCarloProjectionState) {
-//                retVal = 10000;
+//                retVal = defaultMonteCarloCycles;
 //            }
     
             return retVal;
@@ -141,6 +142,30 @@ class SWRCalc extends React.Component {
             this.setState( { endDataYearState: newValue[1] } );
         }
 
+        const generateSourceData = () => {
+
+            var calcSourceData = [];
+
+            // TODO : incorporate non-default start/end years
+
+            for (var i = 0; i < numCycles; i++) {
+                for (var j = 0; j < lifetime; j++) {
+                    var oneYear = {
+                        'year': histData[i + j].year,
+                        'cpi' : histData[i + j].cpi,
+                        'dividends' : histData[i + j].dividends,
+                        'bonds' : histData[i + j].bonds,
+                        'gold' : histData[i + j].gold,
+                        'equity' : histData[i + j].equity,                
+                    };
+                    // console.log('cycle: ' + i + ' year: ' + j + ' ' + oneYear.year);
+                    calcSourceData[(i * lifetime) + j] = oneYear;
+                }
+            }
+
+            return calcSourceData;
+        }
+
         const calcAnnualAggReturn = (oneYear, stockPct, bondPct) => {
 
             var retVal = (oneYear.equityReturn * stockPct) + (oneYear.bondReturn * bondPct);
@@ -164,6 +189,28 @@ class SWRCalc extends React.Component {
             return retVal;
         }        
 
+        const calcBondYield = (bondStake, sourceIndex, sourceData) => {
+                
+            var retValue = 0;
+
+            // if we're at the end of the cycle, use the simplified calculation
+            if (sourceData.length <= (sourceIndex + 1)) {
+                retValue = bondStake * sourceData[sourceIndex].bonds;
+            }
+            else {
+                var bg1 = (1 - Math.pow(1 + sourceData[sourceIndex + 1].bonds, -9 ))
+                        * sourceData[sourceIndex].bonds;
+                bg1 = bg1 / sourceData[sourceIndex + 1].bonds;
+                
+                var bg2 = 1 / Math.pow(1 + sourceData[sourceIndex + 1].bonds, 9);
+                bg2 = bg2 - 1;
+
+                retValue = bondStake * (bg1 + bg2 + sourceData[sourceIndex].bonds);
+            }
+
+            return retValue;
+        }
+
         const applySpend = (thisCycle) => {
             const ssAge = this.state.socialSecurityAgeState;
             const ssIncome = (this.state.ssOnState) ? this.state.socialSecurityIncomeState : 0;
@@ -179,14 +226,14 @@ class SWRCalc extends React.Component {
             thisCycle.endValue = thisCycle.beginValue - thisCycle.actualSpend;
         }
 
-        const applyAppreciation = (thisCycle, cycleNum) => {
+        const applyAppreciation = (thisCycle, cycleNum, sourceData) => {
             const stockPct = this.state.stockAllocPctState / 100;
             const bondPct = (100 - this.state.stockAllocPctState) / 100;
             const startStockValue = thisCycle.endValue * stockPct;
 
             thisCycle.equityAppr = startStockValue * thisCycle.equityReturn;
-            thisCycle.divAppr = startStockValue * histData[cycleNum].dividends;
-            thisCycle.bondAppr = calcBondYield(thisCycle.endValue * bondPct, cycleNum);
+            thisCycle.divAppr = startStockValue * sourceData[cycleNum].dividends;
+            thisCycle.bondAppr = calcBondYield(thisCycle.endValue * bondPct, cycleNum, sourceData);
             thisCycle.bondReturn = thisCycle.bondAppr / (thisCycle.beginValue * bondPct);
             thisCycle.aggReturn = calcAnnualAggReturn(thisCycle, stockPct, bondPct);
 
@@ -212,16 +259,16 @@ class SWRCalc extends React.Component {
             thisCycle.adjEndValue = thisCycle.endValue / thisCycle.cumulativeCPI;
         }
 
-        const runCycle = (startIndex, numYears) => {
+        const runCycle = (startIndex, numYears, sourceData) => {
             var cycleData = [];
-            const startCPI = histData[startIndex].cpi;
+            const startCPI = sourceData[startIndex].cpi;
     
             for(var i = 0; i < numYears; i++){
-                var obj = { "year": histData[startIndex + i].year,
+                var obj = { "year": sourceData[startIndex + i].year,
                             "age": this.state.currentAgeState + i,
                             "beginValue": (i > 0) ? cycleData[i - 1].endValue : this.state.portfolioValueState,
-                            "equityReturn": histData[startIndex + i].equity,
-                            "cumulativeCPI": histData[startIndex + i].cpi / startCPI,
+                            "equityReturn": sourceData[startIndex + i].equity,
+                            "cumulativeCPI": sourceData[startIndex + i].cpi / startCPI,
                             "spend": 0,
                             "endValue": 0,
                             // the rest of these fields are not updated when a failure is detected
@@ -247,7 +294,7 @@ class SWRCalc extends React.Component {
                     break;
                 }
 
-                applyAppreciation(obj, startIndex + i);
+                applyAppreciation(obj, startIndex + i, sourceData);
                 applyFees(obj);
                 // net delta is for informational purposes used later
                 calcNetDelta (obj);
@@ -299,10 +346,11 @@ class SWRCalc extends React.Component {
 
         const calcCycles = () => {
 
-            const startIndex = findHistStartIndex(this.state.startDataYearState);
+            var sourceData = generateSourceData();
 
             for (var i = 0; i < numCycles; i++) {
-                var oneCycle = runCycle(startIndex + i, lifetime);
+                var startIndex = (i * lifetime);
+                var oneCycle = runCycle(startIndex, lifetime, sourceData);
                 var cycleMeta = calcCycleMeta(oneCycle);
                 
                 allCyclesMeta[i] = cycleMeta;
