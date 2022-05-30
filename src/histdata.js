@@ -31,6 +31,7 @@ export const generateSourceData = (mcProjection, thisLifetime, startDataYear, en
     var calcSourceData = [];
     var cycleCount = getNumberOfCycles(mcProjection, thisLifetime, startDataYear, endDataYear);
 
+    // TODO - factor in start/end data range.
     for (var i = 0; i < cycleCount; i++) {
         for (var j = 0; j < thisLifetime; j++) {
             var histIndex = (mcProjection) 
@@ -40,10 +41,24 @@ export const generateSourceData = (mcProjection, thisLifetime, startDataYear, en
         }
     }
 
-    console.log('calcSrcData - mcproj:' + mcProjection + ' numCycles:' + cycleCount + ' lifetime:' + thisLifetime + ' indeces:' + calcSourceData.length);
     return calcSourceData;
 }    
 
+export const checkDistribution = (indeces) => {
+    var countArray = [];
+
+    for (var i = 0; i < histData.length; i++) {
+        countArray[i] = 0;
+    }
+
+    for (i = 0; i < indeces.length; i++) {
+        countArray[indeces[i]]++;
+    }
+
+    for (i = 0; i < countArray.length; i++) {
+        console.log(i + ': ' + histData[i].year + ' ' + countArray[i]);
+    }
+}
 
 
 export const histData = [

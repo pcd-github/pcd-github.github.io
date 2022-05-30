@@ -32,7 +32,7 @@ const defaultEndDataYear = histData[histData.length - 1].year;
 const chartCompID = 'chartComponent';
 const monteCarloString = 'montecarlo';
 const historicalString = 'historical';
-const defaultMCProjection = true;
+const defaultMCProjection = false;
 
 class SWRCalc extends React.Component {
 
@@ -78,20 +78,20 @@ class SWRCalc extends React.Component {
 
         const handleAgeChange = (event) => {
             var newValue = +(event.target.value);
-            this.setState( {currentAgeState : newValue } ); 
             var srcData = generateSourceData(this.state.monteCarloProjectionState, 
-                this.state.lifeExpectancyState - newValue + 1,
-                this.state.startDataYearState,
-                this.state.endDataYearState);
+                                             this.state.lifeExpectancyState - newValue + 1,
+                                             this.state.startDataYearState,
+                                             this.state.endDataYearState);
 
             this.setState( { sourceDataState : srcData } );
+            this.setState( {currentAgeState : newValue } ); 
         }
 
         const handleExpectChange = (event, newValue) => {
             var srcData = generateSourceData(this.state.monteCarloProjectionState, 
-                newValue - this.state.currentAgeState + 1,
-                this.state.startDataYearState,
-                this.state.endDataYearState);
+                                             newValue - this.state.currentAgeState + 1,
+                                             this.state.startDataYearState,
+                                             this.state.endDataYearState);
 
             this.setState( { sourceDataState : srcData } );
             this.setState( {lifeExpectancyState : newValue} );
@@ -139,7 +139,7 @@ class SWRCalc extends React.Component {
                                              this.state.endDataYearState);
 
             this.setState( { sourceDataState : srcData } );
-            this.setState({monteCarloProjectionState : mcProj } );
+            this.setState( {monteCarloProjectionState : mcProj } );
         }
 
         const handleDataRangeChange = (event, newValue) => {
@@ -151,22 +151,6 @@ class SWRCalc extends React.Component {
             this.setState( { sourceDataState : srcData } );
             this.setState( { startDataYearState: newValue[0] } );
             this.setState( { endDataYearState: newValue[1] } );
-        }
-
-        const checkDistribution = (indeces) => {
-            var countArray = [];
-
-            for (var i = 0; i < histData.length; i++) {
-                countArray[i] = 0;
-            }
-
-            for (i = 0; i < indeces.length; i++) {
-                countArray[indeces[i]]++;
-            }
-
-            for (i = 0; i < countArray.length; i++) {
-                console.log(i + ': ' + histData[i].year + ' ' + countArray[i]);
-            }
         }
 
         const calcAnnualAggReturn = (oneYear, stockPct, bondPct) => {
@@ -212,24 +196,6 @@ class SWRCalc extends React.Component {
 
                 retValue = bondStake * (bg1 + bg2 + histData[h0].bonds);
             }            
-
-/*
-            // if we're at the end of the cycle, use the simplified calculation
-            if (sourceData.length <= (sourceIndex + 1)) {
-                retValue = bondStake * histData[h0].bonds;
-            }
-            else {
-                var h1 = sourceData[sourceIndex + 1];
-                var bg1 = (1 - Math.pow(1 + histData[h1].bonds, -9 ))
-                        * histData[h0].bonds;
-                bg1 = bg1 / histData[h1].bonds;
-                
-                var bg2 = 1 / Math.pow(1 + histData[h1].bonds, 9);
-                bg2 = bg2 - 1;
-
-                retValue = bondStake * (bg1 + bg2 + histData[h0].bonds);
-            }
-            */
 
             return retValue;
         }
@@ -281,21 +247,28 @@ class SWRCalc extends React.Component {
         const calcAdjustedEndValue = (thisCycle) => {
             thisCycle.adjEndValue = thisCycle.endValue / thisCycle.cumulativeCPI;
         }
-
+/*
         const dumpYear = (oneYear) => {
             console.log(oneYear.age + 
                         ' y:' + oneYear.year +
                         ' bv:' + makeCurrency(oneYear.beginValue) +
-                        // ' eRet:' + makePct(oneYear.equityReturn) +
-                        // ' bRet:' + makePct(oneYear.bondReturn) +
+                        ' eApp:' + makeCurrency(oneYear.equityAppr) +
+                        ' bRet:' + makePct(oneYear.bondReturn) +
                         // ' f:' + makeCurrency(oneYear.fees) +
-                        // ' div:' + makeCurrency(oneYear.divAppr) + 
+                        ' div:' + makeCurrency(oneYear.divAppr) + 
                         ' ccpi:' + oneYear.cumulativeCPI + 
                         ' sp:' + makeCurrency(oneYear.actualSpend) + 
                         ' ev:' + makeCurrency(oneYear.endValue) +
                         ' delta:' + makeCurrency(oneYear.netDelta)
                        );
         }
+
+        const dumpCycle = (cycleData) => {
+            for (var i = 0; i < cycleData.length; i++) {
+                dumpYear(cycleData[i]);
+            }
+        }
+        */
 
         const calcCumulativeCPI = (startCPI, thisYearCPI, sourceDataIndex, prevCCPI) => {
 
@@ -307,16 +280,14 @@ class SWRCalc extends React.Component {
                 retVal = thisYearCPI / startCPI;
             }
             // Monte-carlo sequence cumulative CPI can only be calculated
-            // relative to previous year's value
+            // relative to previous year's value.  There can be as much as
+            // a 2% difference in this method vs. this / start ratio, so I've left 
+            // that one in for the purposes of historical precision.
             else {
                 // calculate annual change - currCPI / prevCPI
                 var prevYearIndex = (0 < sourceDataIndex) ? (sourceDataIndex - 1) : sourceDataIndex;
                 var annualChange = (histData[sourceDataIndex].cpi / histData[prevYearIndex].cpi) - 1;
                 retVal = prevCCPI + annualChange;
-                // console.log(histData[prevYearIndex].year + '(' + histData[prevYearIndex].cpi + ')'
-                //            + '-' + histData[sourceDataIndex].year + '(' + histData[sourceDataIndex].cpi + ')'
-                //             + ' prevCCPI:' + makePct(prevCCPI) + ' currCCPI:' + makePct(retVal)
-                //            );
             }
 
             return retVal;
@@ -332,7 +303,6 @@ class SWRCalc extends React.Component {
             for(var i = 0; i < numYears; i++){
                 var thisIndex = sourceData[startIndex + i];
                 var thisYearSource = histData[thisIndex];
-                // console.log(i + ' ' + (startIndex + i) + ' ' + thisIndex + ' ' + thisYearSource.year);
                 var obj = { "year": thisYearSource.year,
                             "age": this.state.currentAgeState + i,
                             "beginValue": (i > 0) ? cycleData[i - 1].endValue : this.state.portfolioValueState,
@@ -366,11 +336,10 @@ class SWRCalc extends React.Component {
 
                 applyAppreciation(obj, startIndex + i, sourceData);
                 applyFees(obj);
+
                 // net delta is for informational purposes used later
                 calcNetDelta (obj);
                 calcAdjustedEndValue(obj);
-
-                // dumpYear(obj);
 
                 cycleData.push(obj);
             }
@@ -426,7 +395,6 @@ class SWRCalc extends React.Component {
 
             for (var i = 0; i < numCycles; i++) {
                 var startIndex = (i * lifetime);
-                // console.log('cycle: ' + i);
                 var oneCycle = runCycle(startIndex, lifetime, srcData);
                 var cycleMeta = calcCycleMeta(oneCycle);
                 
@@ -522,7 +490,7 @@ class SWRCalc extends React.Component {
                                             <FormControl>
                                                 <RadioGroup
                                                     aria-labelledby="projectionTypeID"
-                                                    defaultValue="montecarlo"
+                                                    defaultValue={historicalString}
                                                     name="radio-buttons-group"
                                                     row
                                                     onChange={handleProjectionToggle}
