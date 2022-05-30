@@ -8,12 +8,43 @@ export const getStdDevEquityReturn = () => {
     return d3.deviation(histData, (d) => d.equity);
 }
 
-export const findHistStartIndex = (startDataYear) => {
-    const firstYear = histData[0].year;
-    const offset = startDataYear - firstYear;
+export const getNumberOfCycles = (mcProjection, lifespan, startDataYear, endDataYear) => {
+    const defaultMonteCarloCycles = 1000;
+    var retVal = (endDataYear - startDataYear + 2) 
+                  - lifespan;
 
-    return offset;
+    if (mcProjection) {
+        retVal = defaultMonteCarloCycles;
+    }
+
+    return retVal;
+}   
+
+const getRandomInteger = (minVal, maxVal) => {
+    minVal = Math.ceil(minVal);
+    maxVal = Math.floor(maxVal);
+    return Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;        
 }
+
+export const generateSourceData = (mcProjection, thisLifetime, startDataYear, endDataYear) => {
+
+    var calcSourceData = [];
+    var cycleCount = getNumberOfCycles(mcProjection, thisLifetime, startDataYear, endDataYear);
+
+    for (var i = 0; i < cycleCount; i++) {
+        for (var j = 0; j < thisLifetime; j++) {
+            var histIndex = (mcProjection) 
+                             ?  getRandomInteger(0, histData.length - 1)
+                             : (i + j) ;
+            calcSourceData[(i * thisLifetime) + j] = histIndex;
+        }
+    }
+
+    console.log('calcSrcData - mcproj:' + mcProjection + ' numCycles:' + cycleCount + ' lifetime:' + thisLifetime + ' indeces:' + calcSourceData.length);
+    return calcSourceData;
+}    
+
+
 
 export const histData = [
     {
