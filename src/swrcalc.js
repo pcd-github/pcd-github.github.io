@@ -15,7 +15,7 @@ import { FormLabel } from "@mui/material";
 import { RadioGroup } from "@mui/material";
 import { Radio } from "@mui/material";
 import { Stack } from "@mui/material";
-import { histData, getNumberOfCycles, generateSourceData } from "./histdata.js";
+import { histData, generateSourceData } from "./histdata.js";
 import { makePct, getColorStringForRelativeValue, makeCurrency } from './common.js';
 import Chart from './chart.js';
 
@@ -139,18 +139,30 @@ class SWRCalc extends React.Component {
                                              this.state.endDataYearState);
 
             this.setState( { sourceDataState : srcData } );
-            this.setState( {monteCarloProjectionState : mcProj } );
+            this.setState( { monteCarloProjectionState : mcProj } );
         }
 
         const handleDataRangeChange = (event, newValue) => {
-            var srcData = generateSourceData(this.state.monteCarloProjectionState, 
-                this.state.lifeExpectancyState - this.state.currentAgeState + 1,
-                newValue[0],
-                newValue[1]);
+            // restrict the range from being smaller than the user lifetime
+            // (life expectancy - age)
+            // we could permit this with monte carlo, but maybe later
+            var lifetime = this.state.lifeExpectancyState - this.state.currentAgeState + 1;
+            var rangeSize = newValue[1] - newValue[0];
 
-            this.setState( { sourceDataState : srcData } );
-            this.setState( { startDataYearState: newValue[0] } );
-            this.setState( { endDataYearState: newValue[1] } );
+            if (rangeSize >= lifetime) {
+                var srcData = generateSourceData(this.state.monteCarloProjectionState, 
+                                                lifetime,
+                                                newValue[0],
+                                                newValue[1]);
+
+                this.setState( { sourceDataState : srcData } );
+                this.setState( { startDataYearState : newValue[0] } );
+                this.setState( { endDataYearState : newValue[1] } );
+            }
+            else {
+                console.log('bzzt - range smaller than user lifetime');
+            }
+
         }
 
         const calcAnnualAggReturn = (oneYear, stockPct, bondPct) => {
@@ -388,12 +400,9 @@ class SWRCalc extends React.Component {
         const calcCycles = (srcData) => {
 
             var lifetime = this.state.lifeExpectancyState - this.state.currentAgeState + 1;
-            var numCycles = getNumberOfCycles(this.state.monteCarloProjectionState, 
-                                              lifetime,
-                                              this.state.startDataYearState,
-                                              this.state.endDataYearState);
+            var numCycles = srcData.length / lifetime;
 
-            for (var i = 0; i < numCycles; i++) {
+            for (var i = 0; i < numCycles; i++) {  
                 var startIndex = (i * lifetime);
                 var oneCycle = runCycle(startIndex, lifetime, srcData);
                 var cycleMeta = calcCycleMeta(oneCycle);
@@ -507,6 +516,7 @@ class SWRCalc extends React.Component {
                                             marks step={1}
                                             min={defaultStartDataYear} max={defaultEndDataYear}
                                             defaultValue={[defaultStartDataYear, defaultEndDataYear]}
+                                            value={ [this.state.startDataYearState, this.state.endDataYearState] }
                                             valueLabelDisplay="auto"                                     
                                             onChange={handleDataRangeChange}
                                             />
@@ -556,10 +566,10 @@ class SWRCalc extends React.Component {
                        portmax={portMax}
                        cycledata={allCycles}
                        cyclemeta={allCyclesMeta}
-                       numcycles={getNumberOfCycles(this.state.monteCarloProjectionState,
-                                                    this.state.lifeExpectancyState - this.state.currentAgeState + 1,
-                                                    this.state.startDataYearState, this.state.endDataYearState
-                                                   )}
+                       numcycles={ (null != this.state.sourceDataState) 
+                                  ? (this.state.sourceDataState.length / 
+                                     (this.state.lifeExpectancyState - this.state.currentAgeState + 1) ) 
+                                  : 0  }
                        currentage={this.state.currentAgeState}
                        lifeexpectancy={this.state.lifeExpectancyState}
                        minzoom={this.state.minZoomValueState}

@@ -8,13 +8,13 @@ export const getStdDevEquityReturn = () => {
     return d3.deviation(histData, (d) => d.equity);
 }
 
-export const getNumberOfCycles = (mcProjection, lifespan, startDataYear, endDataYear) => {
+const getNumberOfCycles = (mcProjection, lifespan, startDataYear, endDataYear) => {
     const defaultMonteCarloCycles = 1000;
-    var retVal = (endDataYear - startDataYear + 2) 
-                  - lifespan;
+    var retVal = defaultMonteCarloCycles;
 
-    if (mcProjection) {
-        retVal = defaultMonteCarloCycles;
+    if (!mcProjection) {
+        retVal = Math.max(0, (endDataYear - startDataYear + 2) 
+                  - lifespan);
     }
 
     return retVal;
@@ -30,13 +30,14 @@ export const generateSourceData = (mcProjection, thisLifetime, startDataYear, en
 
     var calcSourceData = [];
     var cycleCount = getNumberOfCycles(mcProjection, thisLifetime, startDataYear, endDataYear);
+    var startOffset = startDataYear - histData[0].year;
 
     // TODO - factor in start/end data range.
     for (var i = 0; i < cycleCount; i++) {
         for (var j = 0; j < thisLifetime; j++) {
             var histIndex = (mcProjection) 
                              ?  getRandomInteger(0, histData.length - 1)
-                             : (i + j) ;
+                             : (startOffset + i + j) ;
             calcSourceData[(i * thisLifetime) + j] = histIndex;
         }
     }
