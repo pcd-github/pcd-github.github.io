@@ -16,12 +16,11 @@ import { RadioGroup } from "@mui/material";
 import { Radio } from "@mui/material";
 import { Stack } from "@mui/material";
 import { histData, generateSourceData } from "./histdata.js";
-import { makePct, getColorStringForRelativeValue, makeCurrency } from './common.js';
+import { makePct, getColorStringForRelativeValue } from './common.js';
 import Chart from './chart.js';
 
 const defaultPortfolioValue = 1250000;
 const defaultAge = 62;
-const maxAge = 110;
 const defaultExpectancy = 95;
 const defaultSpendValue = 50000;
 const defaultStocks = 80;
@@ -69,6 +68,17 @@ class SWRCalc extends React.Component {
         this.setState( {selectedBinState : selectedBin });
     }
 
+    componentDidMount () {
+        var srcData = this.state.sourceDataState;
+        if (null == srcData) {
+            srcData = generateSourceData(this.state.monteCarloProjectionState, 
+                                         this.state.lifeExpectancyState - this.state.currentAgeState + 1,
+                                         this.state.startDataYearState,
+                                         this.state.endDataYearState);
+            this.setState( { sourceDataState : srcData } );
+        }
+    }
+
     render () { 
 
         var portMin = this.state.portfolioValueState;
@@ -78,23 +88,30 @@ class SWRCalc extends React.Component {
 
         const handleAgeChange = (event) => {
             var newValue = +(event.target.value);
-            var srcData = generateSourceData(this.state.monteCarloProjectionState, 
-                                             this.state.lifeExpectancyState - newValue + 1,
-                                             this.state.startDataYearState,
-                                             this.state.endDataYearState);
 
-            this.setState( { sourceDataState : srcData } );
-            this.setState( {currentAgeState : newValue } ); 
+            if (newValue < this.state.lifeExpectancyState) {
+                var srcData = generateSourceData(this.state.monteCarloProjectionState, 
+                                                this.state.lifeExpectancyState - newValue + 1,
+                                                this.state.startDataYearState,
+                                                this.state.endDataYearState);
+
+                this.setState( {currentAgeState : newValue } ); 
+                this.setState( { sourceDataState : srcData } );
+            }                          
         }
 
-        const handleExpectChange = (event, newValue) => {
-            var srcData = generateSourceData(this.state.monteCarloProjectionState, 
-                                             newValue - this.state.currentAgeState + 1,
-                                             this.state.startDataYearState,
-                                             this.state.endDataYearState);
+        const handleExpectChange = (event) => {
+            var newValue = +(event.target.value);
 
-            this.setState( { sourceDataState : srcData } );
-            this.setState( {lifeExpectancyState : newValue} );
+            if (newValue > this.state.currentAgeState) {
+                var srcData = generateSourceData(this.state.monteCarloProjectionState, 
+                                                newValue - this.state.currentAgeState + 1,
+                                                this.state.startDataYearState,
+                                                this.state.endDataYearState);
+
+                this.setState( {lifeExpectancyState : newValue} );
+                this.setState( { sourceDataState : srcData } );
+            }
         }
 
         const handlePortfolioValueChange = (event) => {
@@ -138,8 +155,8 @@ class SWRCalc extends React.Component {
                                              this.state.startDataYearState,
                                              this.state.endDataYearState);
 
-            this.setState( { sourceDataState : srcData } );
             this.setState( { monteCarloProjectionState : mcProj } );
+            this.setState( { sourceDataState : srcData } );
         }
 
         const handleDataRangeChange = (event, newValue) => {
@@ -155,9 +172,9 @@ class SWRCalc extends React.Component {
                                                 newValue[0],
                                                 newValue[1]);
 
-                this.setState( { sourceDataState : srcData } );
                 this.setState( { startDataYearState : newValue[0] } );
                 this.setState( { endDataYearState : newValue[1] } );
+                this.setState( { sourceDataState : srcData } );
             }
             else {
                 console.log('bzzt - range smaller than user lifetime');
@@ -416,14 +433,9 @@ class SWRCalc extends React.Component {
         }
 
         var srcData = this.state.sourceDataState;
-        if (null == srcData) {
-            srcData = generateSourceData(this.state.monteCarloProjectionState, 
-                                         this.state.lifeExpectancyState - this.state.currentAgeState + 1,
-                                         this.state.startDataYearState,
-                                         this.state.endDataYearState);
-            this.setState( { sourceDataState : srcData } );
+        if (null != srcData) {
+            calcCycles(srcData);
         }
-        calcCycles(srcData);
 
         return (
 
@@ -440,26 +452,25 @@ class SWRCalc extends React.Component {
                         }} >
 
                             <List> 
-                                <ListItem >
+                                <ListItem divider >
                                     <TextField required label="Age" 
                                         sx={{ m: '10px' }}
-                                        type="number" defaultValue={defaultAge}
+                                        type="number"
+                                        value={this.state.currentAgeState}
                                         onChange={handleAgeChange}
                                         InputLabelProps={{
                                         shrink: true,
-                                    }}
+                                        }}
                                     />
-                                </ListItem>
-                                <ListItem >
-                                    <div >Life Expectancy: </div>
-                                    <div id="lifeExpectDiv" >{this.state.lifeExpectancyState}</div>
-                                </ListItem>
-                                <ListItem divider >
-                                    <Slider id="lifeExpectSlider" size="small"
-                                    label="Life Expectancy" marks step={1} 
-                                    min={defaultAge} max={maxAge}
-                                    valueLabelDisplay="auto" defaultValue={defaultExpectancy}  
-                                    onChange={handleExpectChange} />
+                                    <TextField required label="Life Expectancy" 
+                                        sx={{ m: '10px' }}
+                                        type="number" 
+                                        value={this.state.lifeExpectancyState}
+                                        onChange={handleExpectChange}
+                                        InputLabelProps={{
+                                        shrink: true,
+                                        }}
+                                    />
                                 </ListItem>
                                 <ListItem>
                                     <TextField required 

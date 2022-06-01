@@ -32,6 +32,7 @@ export const generateSourceData = (mcProjection, thisLifetime, startDataYear, en
     var cycleCount = getNumberOfCycles(mcProjection, thisLifetime, startDataYear, endDataYear);
     var startOffset = startDataYear - histData[0].year;
 
+
     // TODO - factor in start/end data range.
     for (var i = 0; i < cycleCount; i++) {
         for (var j = 0; j < thisLifetime; j++) {
