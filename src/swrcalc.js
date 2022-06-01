@@ -472,14 +472,12 @@ class SWRCalc extends React.Component {
                                         }}
                                     />
                                 </ListItem>
-                                <ListItem>
+                                <ListItem divider >
                                     <TextField required 
                                     sx={{ m: '10px' }}
                                     type="number" label="Portfolio Value $" 
                                     defaultValue={defaultPortfolioValue} 
                                     onChange={handlePortfolioValueChange} />
-                                </ListItem>
-                                <ListItem divider >
                                     <TextField required 
                                     sx={{ m: '10px' }}
                                     type="number" label="Annual Spend $" 
