@@ -324,7 +324,7 @@ class SWRCalc extends React.Component {
                             "age": this.state.currentAgeState + i,
                             "beginValue": (i > 0) ? cycleData[i - 1].endValue : this.state.portfolioValueState,
                             "equityReturn": thisYearSource.equity,
-                            "cumulativeCPI": calcCumulativeCPI(startCPI, thisYearSource.cpi, thisIndex, prevYearCCPI),
+                            "cumulativeCPI": (0 === i) ? 1 : calcCumulativeCPI(startCPI, thisYearSource.cpi, thisIndex, prevYearCCPI),
                             "spend": 0,
                             "endValue": 0,
                             // the rest of these fields are not updated when a failure is detected

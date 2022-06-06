@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import SummaryCards from "./summary.js";
 import EndValueChart from './endvaluechart.js';
 import "./chartdata.css";
-import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency} from './common.js';
+import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency, dumpCycleToCSV} from './common.js';
 
 function Chart (props) {
   
@@ -106,28 +106,32 @@ function Chart (props) {
         const y0 = yScaleIn.invert(coords[1]);
         const oneCycleData = props.cycledata[0];
         const i = bisect(oneCycleData, x0, 1);
-        const selectedData = oneCycleData[i];
-        const clientX = xScaleIn(selectedData.age);
-        var tooltipX = clientX;
-        
-        // prevent the tooltip from getting clipped.
-        const tooltipWidth = 75;             
-        if (boundedWidth <= (clientX + tooltipWidth)) {
-            tooltipX = clientX - tooltipWidth;
+
+        if (oneCycleData.length >= i) {
+            const selectedData = oneCycleData[i];
+            const clientX = xScaleIn(selectedData.age);
+            var tooltipX = clientX;
+            
+            // prevent the tooltip from getting clipped.
+            const tooltipWidth = 75;             
+            if (boundedWidth <= (clientX + tooltipWidth)) {
+                tooltipX = clientX - tooltipWidth;
+            }
+            getTooltipAgeSpan().text('age: ' + selectedData.age);
+
+            getTooltipValueSpan().text(makeCurrency(y0));
+
+            const ttBounds = getTooltipWrapper().node().getBBox();
+            getTooltipBackground()                
+                .attr('width', ttBounds.width)
+                .attr('height', ttBounds.height);
+
+            getTooltipWrapper().attr("transform", "translate(" + tooltipX + "," + coords[1] + ")");  
+
+            getHoverLine().attr('x', clientX);
+            getTooltipWrapper().attr('x', tooltipX);                    
         }
-        getTooltipAgeSpan().text('age: ' + selectedData.age);
 
-        getTooltipValueSpan().text(makeCurrency(y0));
-
-        const ttBounds = getTooltipWrapper().node().getBBox();
-        getTooltipBackground()                
-            .attr('width', ttBounds.width)
-            .attr('height', ttBounds.height);
-
-        getTooltipWrapper().attr("transform", "translate(" + tooltipX + "," + coords[1] + ")");  
-
-        getHoverLine().attr('x', clientX);
-        getTooltipWrapper().attr('x', tooltipX);
     };
     
     const handleMouseLeave = (e) => {
@@ -137,6 +141,34 @@ function Chart (props) {
         var currLine = d3.select(e.currentTarget);
         currLine.attr("stroke-width", normalStrokeWidth);
     };
+
+    const generateCSVName = (first, last) => {
+        return 'cycledata' + first + last + '.csv';
+    }
+
+    const downloadCSV = (filename, text) => {
+        var pom = document.createElement('a');
+
+        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        pom.setAttribute('download', filename);
+    
+        if (document.createEvent) {
+            var event = document.createEvent('MouseEvents');
+            event.initEvent('click', true, true);
+            pom.dispatchEvent(event);
+        }
+        else {
+            pom.click();
+        }
+    }
+
+    const handleMouseClick = (e) => {
+        var ds = e.currentTarget.__data__;
+        var filename = generateCSVName(ds[0].year, ds[ds.length - 1].year);
+        var csvText = dumpCycleToCSV(ds);
+
+        downloadCSV(filename, csvText);
+    }
 
     const getAggReturns = (allCycleData) => {
         var retVal = [];
@@ -252,6 +284,7 @@ function Chart (props) {
             var enterHandler = handleMouseOver;
             var hoverHandler = handleMouseMove;
             var leaveHandler = handleMouseLeave;
+            var clickHandler = handleMouseClick;
 
             if ((null != props.zoomcolor) && 
                 (props.zoomcolor !== oneCycleMeta.lineColor)) {
@@ -259,6 +292,7 @@ function Chart (props) {
                 enterHandler = null;
                 hoverHandler = null;
                 leaveHandler = null;
+                clickHandler = null;
             }
 
             svg.append("path")
@@ -272,6 +306,7 @@ function Chart (props) {
                 .on('mouseenter', enterHandler)
                 .on('mouseover', hoverHandler)
                 .on('mouseleave', leaveHandler)
+                .on('click', clickHandler)
                 .attr("d", d3.line()
                             .x(function(d) { return xScaleIn(d.age) })
                             .y(function(d) { return yScaleIn(d.adjEndValue) }));
@@ -345,6 +380,14 @@ function Chart (props) {
                         .attr('x', '5')
                         .attr('y', '5')
                         .attr('dy', '35px');
+
+            tooltipText.append('tspan')
+                        .attr('class', className)
+                        .text('click to download csv data')
+                        .attr("pointer-events", "none")
+                        .attr('x', '5')
+                        .attr('y', '5')
+                        .attr('dy', '55px');
     
             svg.append("g")
                .append("rect")
