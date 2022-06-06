@@ -170,27 +170,8 @@ class SWRCalc extends React.Component {
 
         }
 
-        const calcAnnualAggReturn = (oneYear, stockPct, bondPct) => {
-
-            var retVal = (oneYear.equityReturn * stockPct) + (oneYear.bondReturn * bondPct);
-            
-            if (isNaN(retVal)) {
-                if (1 === stockPct) {
-                    retVal = oneYear.equityReturn;
-                }
-                else if (1 === bondPct) {
-                    retVal = oneYear.bondReturn;
-                }
-                else {
-                    retVal = 0;
-                    console.log('unexpected aggReturn result- equity :(' + 
-                                makePct(oneYear.equityReturn) + ',' + makePct(stockPct) + ') ' +
-                                ' bond:(' +
-                                makePct(oneYear.bondReturn) + ',' + makePct(bondPct) + ')');
-                }
-            }
-        
-            return retVal;
+        const calcAnnualAggReturn = (beginValue, appr) => {
+            return appr / beginValue;
         }        
 
         const calcBondYield = (bondStake, sourceIndex, sourceData) => {
@@ -234,27 +215,43 @@ class SWRCalc extends React.Component {
 
         const applyAppreciation = (thisCycle, cycleNum, sourceData) => {
             const stockPct = this.state.stockAllocPctState / 100;
-            const bondPct = (100 - this.state.stockAllocPctState) / 100;
-            const startStockValue = thisCycle.endValue * stockPct;
+            const bondPct = 1 - stockPct;
 
-            thisCycle.equityAppr = startStockValue * thisCycle.equityReturn;
-            thisCycle.divAppr = startStockValue * histData[sourceData[cycleNum]].dividends;
-            thisCycle.bondAppr = calcBondYield(thisCycle.endValue * bondPct, cycleNum, sourceData);
-            thisCycle.bondReturn = thisCycle.bondAppr / (thisCycle.beginValue * bondPct);
-            thisCycle.aggReturn = calcAnnualAggReturn(thisCycle, stockPct, bondPct);
+            // Use endValue, as it has the annual spend deducted already
+            thisCycle.beginEquityValue = thisCycle.endValue * stockPct;
+            thisCycle.beginBondValue = thisCycle.endValue * bondPct;
 
+            thisCycle.equityAppr = thisCycle.beginEquityValue * thisCycle.equityReturn;
+            thisCycle.divAppr = thisCycle.beginEquityValue * histData[sourceData[cycleNum]].dividends;
+            thisCycle.bondAppr = calcBondYield(thisCycle.beginBondValue, cycleNum, sourceData);
+            thisCycle.bondReturn = thisCycle.bondAppr / thisCycle.beginBondValue;
+
+            thisCycle.endEquityValue = thisCycle.beginEquityValue + thisCycle.equityAppr + thisCycle.divAppr;
+            thisCycle.endBondValue = thisCycle.beginBondValue + thisCycle.bondAppr;
+
+            thisCycle.endValue = thisCycle.endEquityValue + thisCycle.endBondValue;
+
+            // used for informational/summary purposes later
             thisCycle.appr = thisCycle.equityAppr + thisCycle.divAppr + thisCycle.bondAppr;
-            thisCycle.endValue += thisCycle.appr;
-
-            // used for informational purposes later
             thisCycle.adjAppr = thisCycle.appr / thisCycle.cumulativeCPI;
+            thisCycle.aggReturn = calcAnnualAggReturn(thisCycle.beginValue, thisCycle.appr);
         }
 
         const applyFees = (thisCycle) => {
+            // endValue include spend-down + current appreciation
             const feePct = this.state.feePctState / 100;
+            const totalFees = thisCycle.endValue * feePct;
+            // end{Equity, Bond}Value includes per-class appreciation
+            const currEquityPct = thisCycle.endEquityValue / thisCycle.endValue;
+            const currBondPct = thisCycle.endBondValue / thisCycle.endValue;
+            var equityFees = totalFees * currEquityPct;
+            var bondFees = totalFees * currBondPct;
 
-            thisCycle.fees = (thisCycle.beginValue + thisCycle.appr) * feePct;
-            thisCycle.endValue -= thisCycle.fees;
+            thisCycle.endEquityValue -= equityFees;
+            thisCycle.endBondValue -= bondFees;
+            thisCycle.endValue = thisCycle.endEquityValue + thisCycle.endBondValue;
+
+            thisCycle.fees = totalFees;
         }
 
         const calcNetDelta = (thisCycle) => {
@@ -323,6 +320,10 @@ class SWRCalc extends React.Component {
                 var obj = { "year": thisYearSource.year,
                             "age": this.state.currentAgeState + i,
                             "beginValue": (i > 0) ? cycleData[i - 1].endValue : this.state.portfolioValueState,
+                            "beginEquityValue": 0,
+                            "endEquityValue" : 0,
+                            "beginBondValue" : 0,
+                            "endBondValue" : 0,
                             "equityReturn": thisYearSource.equity,
                             "cumulativeCPI": (0 === i) ? 1 : calcCumulativeCPI(startCPI, thisYearSource.cpi, thisIndex, prevYearCCPI),
                             "spend": 0,
