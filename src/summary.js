@@ -36,7 +36,7 @@ function SummaryCards (props) {
                 <Card>
                     <CardContent>
                         <Typography gutterBottom variant="h6" component="h2">
-                            Inflation Adjusted End Value ($)
+                            End Values ($)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             mean : {makeCurrency(props.avgendvalue)} 
@@ -58,7 +58,7 @@ function SummaryCards (props) {
                 <Card>
                     <CardContent>
                         <Typography gutterBottom variant="h6" component="h2">
-                            Combined Returns (%)
+                            Aggregate Returns (%)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             median : { makePct(props.medianreturns) }
