@@ -111,7 +111,7 @@ export const dumpCycleToCSV = (cycleData) => {
     const cycleLength = cycleData.length;
     const comma = ',';
     var dataset = 'iteration, age, year, cumulativeCPI, beginValue, spend, actualSpend, equityReturn, equityAppr, bondReturn, bondAppr, divAppr, aggReturn, fees, endValue, adjEndValue\n';
-    
+
     for (var i = 0; i < cycleLength; i++) {
         dataset += (i + comma
                     + cycleData[i].age + comma
@@ -155,4 +155,20 @@ export const dumpCycleToCSVFile = (cycleData) => {
     var dataset = dumpCycleToCSV(cycleData);
 
     downloadCSV (filename, dataset);
+}
+
+export const dumpAllToCSVFile = (allCycles) => {
+    var currentdate = new Date();
+    var filename = 'allcycles' + currentdate.getFullYear() + currentdate.getMonth() + currentdate.getDate()
+                    + '-' + currentdate.getHours() + currentdate.getMinutes() + currentdate.getSeconds()
+                    + '.csv';
+    var csvData = [];
+
+    for (var i = 0; i < allCycles.length; i++) {
+        csvData += ('cycle ' + i + '\n');
+        csvData += dumpCycleToCSV(allCycles[i]);
+        csvData += ('\n\n');
+    }
+
+    downloadCSV (filename, csvData);
 }

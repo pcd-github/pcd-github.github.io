@@ -1,8 +1,8 @@
-// TODO : add monte-carlo option
 import * as d3 from "d3";
 import * as React from "react";
 import { Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import { Box } from "@mui/system";
+import Button from '@mui/material/Button';
 import { Checkbox } from "@mui/material";
 import { TextField } from "@mui/material";
 import { List } from "@mui/material";
@@ -16,7 +16,7 @@ import { RadioGroup } from "@mui/material";
 import { Radio } from "@mui/material";
 import { Stack } from "@mui/material";
 import { histData, generateSourceData } from "./histdata.js";
-import { getColorStringForRelativeValue } from './common.js';
+import { getColorStringForRelativeValue, dumpAllToCSVFile } from './common.js';
 import Chart from './chart.js';
 
 const defaultPortfolioValue = 1250000;
@@ -91,6 +91,10 @@ class SWRCalc extends React.Component {
 
                 this.setState( {currentAgeState : newValue } ); 
             }                          
+        }
+
+        const handleSaveAll = (event) => {
+            dumpAllToCSVFile(allCycles);
         }
 
         const handleExpectChange = (event, newValue) => {
@@ -450,6 +454,7 @@ class SWRCalc extends React.Component {
                                         shrink: true,
                                         }}
                                     />
+                                    <Button variant="outlined" onClick={handleSaveAll} >Save to CSV</Button>
                                 </ListItem>
                                 <ListItem  >
                                     <div >Life expectancy : {this.state.lifeExpectancyState}</div>                                 
