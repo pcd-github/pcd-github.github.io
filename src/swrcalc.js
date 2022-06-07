@@ -16,7 +16,7 @@ import { RadioGroup } from "@mui/material";
 import { Radio } from "@mui/material";
 import { Stack } from "@mui/material";
 import { histData, generateSourceData } from "./histdata.js";
-import { makePct, getColorStringForRelativeValue } from './common.js';
+import { getColorStringForRelativeValue } from './common.js';
 import Chart from './chart.js';
 
 const defaultPortfolioValue = 1250000;

@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import SummaryCards from "./summary.js";
 import EndValueChart from './endvaluechart.js';
 import "./chartdata.css";
-import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency, dumpCycleToCSV} from './common.js';
+import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency, dumpCycleToCSVFile} from './common.js';
 
 function Chart (props) {
   
@@ -142,32 +142,9 @@ function Chart (props) {
         currLine.attr("stroke-width", normalStrokeWidth);
     };
 
-    const generateCSVName = (first, last) => {
-        return 'cycledata' + first + last + '.csv';
-    }
-
-    const downloadCSV = (filename, text) => {
-        var pom = document.createElement('a');
-
-        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-        pom.setAttribute('download', filename);
-    
-        if (document.createEvent) {
-            var event = document.createEvent('MouseEvents');
-            event.initEvent('click', true, true);
-            pom.dispatchEvent(event);
-        }
-        else {
-            pom.click();
-        }
-    }
-
     const handleMouseClick = (e) => {
         var ds = e.currentTarget.__data__;
-        var filename = generateCSVName(ds[0].year, ds[ds.length - 1].year);
-        var csvText = dumpCycleToCSV(ds);
-
-        downloadCSV(filename, csvText);
+        dumpCycleToCSVFile(ds);
     }
 
     const getAggReturns = (allCycleData) => {
