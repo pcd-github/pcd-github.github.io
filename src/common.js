@@ -107,9 +107,29 @@ const generateCycleCSVName = (first, last) => {
     return 'cycledata' + first + last + '.csv';
 }
 
+const dumpCycleHeader = (cycleData) => {
+    var cycleHeader = [];
+    var lastIteration = cycleData[cycleData.length - 1];
+
+    // Failure case?
+    if (0 === lastIteration.adjEndValue) {
+        cycleHeader += ('failure at age ' + lastIteration.age + ' after ' +
+                        cycleData.length + ' years\n\n');
+    }
+    else {
+        cycleHeader += ('at age ' + lastIteration.age + ' after ' +
+                        cycleData.length + ' years - have ' +
+                        lastIteration.adjEndValue + 
+                        ' remaining - cumulative CPI is ' +
+                        lastIteration.cumulativeCPI + '\n\n');
+    }
+
+    return cycleHeader;
+}
+
 export const dumpCycleToCSV = (cycleData) => {
     const cycleLength = cycleData.length;
-    const comma = ',';
+    const comma = ',';    
     var dataset = 'iteration, age, year, cumulativeCPI, beginValue, spend, actualSpend, equityReturn, equityAppr, bondReturn, bondAppr, divAppr, aggReturn, fees, endValue, adjEndValue\n';
 
     for (var i = 0; i < cycleLength; i++) {
@@ -152,9 +172,10 @@ const downloadCSV = (filename, text) => {
 
 export const dumpCycleToCSVFile = (cycleData) => {
     var filename = generateCycleCSVName(cycleData[0].year, cycleData[cycleData.length - 1].year);
-    var dataset = dumpCycleToCSV(cycleData);
+    var csvData = dumpCycleHeader(cycleData);
+    csvData += dumpCycleToCSV(cycleData);
 
-    downloadCSV (filename, dataset);
+    downloadCSV (filename, csvData);
 }
 
 export const dumpAllToCSVFile = (allCycles) => {
@@ -166,7 +187,39 @@ export const dumpAllToCSVFile = (allCycles) => {
 
     for (var i = 0; i < allCycles.length; i++) {
         csvData += ('cycle ' + i + '\n');
+        csvData += dumpCycleHeader(allCycles[i]);
         csvData += dumpCycleToCSV(allCycles[i]);
+        csvData += ('\n\n');
+    }
+
+    downloadCSV (filename, csvData);
+}
+
+const dumpBinHeader = (binData) => {
+    var csvData = [];
+    
+    if (0 === binData.x0) {
+        csvData = 'failure cycles ';
+    }
+    else {
+        csvData = 'cycles range from ' + binData.x0 + '-' + binData.x1;
+    }
+    csvData += '\n\n';
+
+    return csvData;
+}
+
+export const dumpBinToCSVFile = (binData) => {
+    var currentdate = new Date();
+    var filename = 'bin' + binData.x0 + '-' + currentdate.getFullYear() + currentdate.getMonth() + currentdate.getDate()
+                    + '-' + currentdate.getHours() + currentdate.getMinutes() + currentdate.getSeconds()
+                    + '.csv';
+    var csvData = dumpBinHeader(binData);
+
+    for (var i = 0; i < binData.length; i++) {
+        csvData += ('cycle ' + i + '\n');
+        csvData += dumpCycleHeader(binData[i].cycleData);
+        csvData += dumpCycleToCSV(binData[i].cycleData);
         csvData += ('\n\n');
     }
 

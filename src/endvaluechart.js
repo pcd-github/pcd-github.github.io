@@ -1,8 +1,12 @@
 import * as React from "react";
+import {useState} from "react";
 import * as d3 from "d3";
-import { margin, getSelectedOpacity, getUnselectedOpacity, cleanupPrev, makeCurrency, makePct, getPerRunClassName, getThresholdValues, getColorStringForRelativeValue, findByID } from "./common.js";
+import Button from '@mui/material/Button';
+import { margin, getSelectedOpacity, getUnselectedOpacity, cleanupPrev, makeCurrency, makePct, getPerRunClassName, getThresholdValues, getColorStringForRelativeValue, findByID, dumpBinToCSVFile } from "./common.js";
 
 function EndValueChart (props) {
+
+    const [selectedBinDataState, setSelectedBinDataState] = useState(null);
 
     const svgBinChartID = 'endvaluechartsvg';
     const perRunClass = getPerRunClassName() + svgBinChartID;
@@ -40,6 +44,10 @@ function EndValueChart (props) {
         return retVal;
     }
 
+    const handleSaveBin = (e) => {
+        dumpBinToCSVFile(selectedBinDataState);
+    }
+
     const handleMouseDown = (e) => {
         const thisBin = e.srcElement.__data__;
         var colorString = null;
@@ -54,6 +62,10 @@ function EndValueChart (props) {
             zoomMin = binExt[0];
             zoomMax = binExt[1]; 
             selectedBin = thisBin.x0;
+            setSelectedBinDataState(thisBin);
+        }
+        else {
+            setSelectedBinDataState(null);
         }
 
         props.zoomcallback(zoomMin, zoomMax, colorString, selectedBin);
@@ -169,7 +181,7 @@ function EndValueChart (props) {
             const binSelectWrapper = svg.append('g')
                                       .attr('id', ttBinSelectWrapID)
                                       .attr("class", perRunClass);
-    
+
             binSelectWrapper.append('g').append('text')
                             .text(selectBinString)
                             .attr('transform', evMarginTranslate)
@@ -229,14 +241,12 @@ function EndValueChart (props) {
 
         cleanupPrev(perRunClass);
         drawHistogram(chartGroup);
-        // console.log('bin : e');
         // eslint-disable-next-line
     }, [props.metadata, props.startvalue, props.selectedbin, props.zoomcolor] );
 
-    // console.log('bin : r');
-
     return (
-        <div>
+        <div> 
+            <Button disabled={null === props.selectedbin} variant="outlined" onClick={handleSaveBin} >Save to CSV</Button>
             <svg id={svgBinChartID}  
                 width={totalWidth}
                 height={totalHeight} 

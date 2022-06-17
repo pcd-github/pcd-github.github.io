@@ -58,7 +58,7 @@ export const checkDistribution = (indeces) => {
     }
 
     for (i = 0; i < countArray.length; i++) {
-        console.log(i + ': ' + histData[i].year + ' ' + countArray[i]);
+        console.log(i + ',' + histData[i].year + ',' + countArray[i]);
     }
 }
 
