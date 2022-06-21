@@ -63,6 +63,7 @@ export const getThresholdValues = () => {
 export const getColorStringForRelativeValue = (ratioValue) => {
     var retValue = midValueColorString;
 
+    ratioValue = Math.round((ratioValue + Number.EPSILON) * 100000000) / 100000000;
     if (0 >= ratioValue) {
         retValue = getFailureColorString();
     }
