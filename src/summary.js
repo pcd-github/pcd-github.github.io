@@ -17,19 +17,19 @@ function SummaryCards (props) {
                 <Card>
                     <CardContent>
                         <Typography gutterBottom variant="h6" component="h2">
-                            Summary Results
+                            Summary
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            {makePct(1 - (props.fails / props.cycles))} success ({props.cycles - props.fails} / {props.cycles} cycles)
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            {makePct(props.numgreaterthanstart / props.cycles)} of cycles ended w/ more $$ than started
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            { makePct(props.netpositivepct)} of years w/ higher appreciation than spend (all cycles)
+                            {makePct(1 - (props.fails / props.cycles))} success ({props.cycles - props.fails} / {props.cycles} )
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             Minimum failure age : {(Number.POSITIVE_INFINITY === props.minfailage) ? 'n/a' : props.minfailage}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            {makePct(props.numgreaterthanstart / props.cycles)} cycles ended higher than started
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            { makePct(props.netpositivepct)} years net positive (all cycles)
                         </Typography>
                     </CardContent>
                 </Card>
@@ -39,26 +39,39 @@ function SummaryCards (props) {
                             End Values ($)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
+                            median : {makeCurrency(props.quantile50endvalue)} 
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
                             mean : {makeCurrency(props.avgendvalue)} 
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             max : {makeCurrency(props.maxendvalue)}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            25% : {makeCurrency(props.quantile25endvalue)} 
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            50% : {makeCurrency(props.quantile50endvalue)} 
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            75% : {makeCurrency(props.quantile75endvalue)} 
                         </Typography>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardContent>
                         <Typography gutterBottom variant="h6" component="h2">
-                            Aggregate Returns (%)
+                            %-tile ($)
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            90% : {makeCurrency(props.quantile90endvalue)} 
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            75% : {makeCurrency(props.quantile75endvalue)} 
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            25% : {makeCurrency(props.quantile25endvalue)} 
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            10% : {makeCurrency(props.quantile10endvalue)} 
+                        </Typography>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent>
+                        <Typography gutterBottom variant="h6" component="h2">
+                            Aggr Returns (%)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             median : { makePct(props.medianreturns) }

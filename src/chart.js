@@ -12,9 +12,11 @@ function Chart (props) {
     const [avgAdjEndValueState, setAvgAdjEndValueState] = useState(0);
     const [maxAdjEndValueState, setMaxAdjEndValueState] = useState(0);
 
+    const [quantile10EndValueState, setQuantile10AdjEndValueState] = useState(0);
     const [quantile25EndValueState, setQuantile25AdjEndValueState] = useState(0);
     const [quantile50EndValueState, setQuantile50AdjEndValueState] = useState(0);
     const [quantile75EndValueState, setQuantile75AdjEndValueState] = useState(0);
+    const [quantile90EndValueState, setQuantile90AdjEndValueState] = useState(0);
 
     const [avgReturnsState, setAvgReturnsState] = useState(0);
     const [medianReturnsState, setMedianReturnsState] = useState(0);
@@ -194,9 +196,11 @@ function Chart (props) {
             var extAdjEnd = d3.extent(allCyclesMeta, (d) => d.adjEndCycleValue);
             var avgAdjEnd = d3.mean(allCyclesMeta, (d) => d.adjEndCycleValue);
 
+            var quantile10 = d3.quantile(allCyclesMeta, 0.10, (d) => d.adjEndCycleValue);
             var quantile25 = d3.quantile(allCyclesMeta, 0.25, (d) => d.adjEndCycleValue);
             var quantile50 = d3.quantile(allCyclesMeta, 0.50, (d) => d.adjEndCycleValue);
             var quantile75 = d3.quantile(allCyclesMeta, 0.75, (d) => d.adjEndCycleValue);
+            var quantile90 = d3.quantile(allCyclesMeta, 0.90, (d) => d.adjEndCycleValue);
 
             var aggReturns = getAggReturns(allCycles);
             var avgReturns = d3.mean(aggReturns);
@@ -226,9 +230,11 @@ function Chart (props) {
             setAvgAdjEndValueState(avgAdjEnd);
             setMaxAdjEndValueState(extAdjEnd[1]);
 
+            setQuantile10AdjEndValueState(quantile10);
             setQuantile25AdjEndValueState(quantile25);
             setQuantile50AdjEndValueState(quantile50);
             setQuantile75AdjEndValueState(quantile75);
+            setQuantile90AdjEndValueState(quantile90);
     
             setAvgReturnsState(avgReturns);
             setMedianReturnsState(medianReturns);
@@ -416,9 +422,11 @@ function Chart (props) {
              numgreaterthanstart={numGreaterThanStartState}
              minfailage={minFailAgeState} 
              avgendvalue={avgAdjEndValueState}
+             quantile10endvalue={quantile10EndValueState}
              quantile25endvalue={quantile25EndValueState}
              quantile50endvalue={quantile50EndValueState}
              quantile75endvalue={quantile75EndValueState}
+             quantile90endvalue={quantile90EndValueState}
              maxendvalue={maxAdjEndValueState}
              medianreturns={medianReturnsState} avgreturns={avgReturnsState}
              minreturns={minReturnsState} maxreturns={maxReturnsState}
