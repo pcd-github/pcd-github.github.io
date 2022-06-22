@@ -16,8 +16,8 @@ function SummaryCards (props) {
             <Stack direction="row">
                 <Card>
                     <CardContent>
-                        <Typography gutterBottom variant="h6" component="h2">
-                            Summary
+                        <Typography variant="h6" component="h6">
+                            summary
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             {makePct(1 - (props.fails / props.cycles))} success ({props.cycles - props.fails} / {props.cycles} )
@@ -35,8 +35,8 @@ function SummaryCards (props) {
                 </Card>
                 <Card>
                     <CardContent>
-                        <Typography gutterBottom variant="h6" component="h2">
-                            End Values ($)
+                        <Typography variant="h6" component="h6">
+                            end value ($)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             median : {makeCurrency(props.quantile50endvalue)} 
@@ -51,8 +51,8 @@ function SummaryCards (props) {
                 </Card>
                 <Card>
                     <CardContent>
-                        <Typography gutterBottom variant="h6" component="h2">
-                            %-tile ($)
+                        <Typography variant="h6" component="h6">
+                            end value %-tiles ($)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             90% : {makeCurrency(props.quantile90endvalue)} 
@@ -70,8 +70,8 @@ function SummaryCards (props) {
                 </Card>
                 <Card>
                     <CardContent>
-                        <Typography gutterBottom variant="h6" component="h2">
-                            Aggr Returns (%)
+                        <Typography variant="h6" component="h6">
+                            returns (%)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             median : { makePct(props.medianreturns) }
