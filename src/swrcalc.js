@@ -477,24 +477,26 @@ class SWRCalc extends React.Component {
                                     defaultValue={defaultSpendValue} 
                                     onChange={handleSpendingValueChange} />
                                 </ListItem>
-                                <ListItem >
-                                    <div >Stocks: </div>
-                                    <div id="sAlloc" >{this.state.stockAllocPctState}%</div>
-                                    <div >&nbsp; Bonds: </div>
-                                    <div id="bAlloc" >{100-this.state.stockAllocPctState}%</div>
-                                </ListItem> 
-                                <ListItem >
-                                    <Slider id="aAlloc" label="Stock Allocation" marks step={5} 
-                                    valueLabelDisplay="auto" defaultValue={defaultStocks}  
-                                    onChange={handleAllocChange} />
-                                </ListItem>
                                 <ListItem divider >
-                                    <TextField required 
-                                    sx={{ m: '10px' }}
-                                    type="number" label="Annual Fee %" 
-                                    defaultValue={defaultFeePct} 
-                                    onChange={handleFeePctChange} />
-                                </ListItem>
+                                    <Accordion>
+                                        <AccordionSummary>
+                                            <div >Stocks: </div>
+                                            <div id="sAlloc" >{this.state.stockAllocPctState}%</div>
+                                            <div >&nbsp; Bonds: </div>
+                                            <div id="bAlloc" >{100-this.state.stockAllocPctState}%</div>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                                <Slider id="aAlloc" label="Stock Allocation" marks step={5} 
+                                                    valueLabelDisplay="auto" defaultValue={defaultStocks}  
+                                                    onChange={handleAllocChange} />
+                                                <TextField required 
+                                                sx={{ m: '10px' }}
+                                                type="number" label="Annual Fee %" 
+                                                defaultValue={defaultFeePct} 
+                                                onChange={handleFeePctChange} />
+                                        </AccordionDetails>
+                                    </Accordion>
+                                </ListItem> 
                                 <ListItem>
                                     <Accordion>
                                         <AccordionSummary>
