@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import * as React from "react";
-import { Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import { Accordion, AccordionSummary, AccordionDetails, InputLabel, MenuItem } from '@mui/material';
 import { Box } from "@mui/system";
 import Button from '@mui/material/Button';
 import { Checkbox } from "@mui/material";
@@ -12,6 +12,7 @@ import { FormGroup } from "@mui/material";
 import { FormControlLabel } from "@mui/material";
 import { FormControl } from "@mui/material";
 import { FormLabel } from "@mui/material";
+import Select from '@mui/material/Select';
 import { RadioGroup } from "@mui/material";
 import { Radio } from "@mui/material";
 import { Stack } from "@mui/material";
@@ -142,8 +143,8 @@ class SWRCalc extends React.Component {
             this.setState( { socialSecurityIncomeState : newValue });
         }
 
-        const handleProjectionToggle = (event, newValue) => {
-            var mcProj = (monteCarloString === newValue);
+        const handleProjectionToggle = (event) => {
+            var mcProj = (monteCarloString === event.target.value);
             this.sourceData = generateSourceData(mcProj, 
                                                  this.state.lifeExpectancyState - this.state.currentAgeState + 1,
                                                  this.state.startDataYearState,
@@ -454,16 +455,20 @@ class SWRCalc extends React.Component {
                                         shrink: true,
                                         }}
                                     />
-                                    <Button variant="outlined" onClick={handleSaveAll} >Save to CSV</Button>
-                                </ListItem>
-                                <ListItem  >
-                                    <div >Life expectancy : {this.state.lifeExpectancyState}</div>                                 
+                                    <Button variant="outlined" onClick={handleSaveAll} >Save</Button>
                                 </ListItem>
                                 <ListItem divider >
-                                    <Slider id="aExpect" label="Life Expectancy" marks step={1} 
-                                            min={this.state.currentAgeState} max={maxExpectancy}
-                                            valueLabelDisplay="auto" value={this.state.lifeExpectancyState}  
-                                            onChange={handleExpectChange} />
+                                    <Accordion>
+                                        <AccordionSummary>
+                                            <div >Life expectancy : {this.state.lifeExpectancyState}</div>                                 
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <Slider id="aExpect" label="Life Expectancy" marks step={1} 
+                                                min={this.state.currentAgeState} max={maxExpectancy}
+                                                valueLabelDisplay="auto" value={this.state.lifeExpectancyState}  
+                                                onChange={handleExpectChange} />
+                                        </AccordionDetails>
+                                    </Accordion>
                                 </ListItem>
                                 <ListItem divider >
                                     <TextField required 
@@ -480,10 +485,10 @@ class SWRCalc extends React.Component {
                                 <ListItem divider >
                                     <Accordion>
                                         <AccordionSummary>
-                                            <div >Stocks: </div>
-                                            <div id="sAlloc" >{this.state.stockAllocPctState}%</div>
-                                            <div >&nbsp; Bonds: </div>
-                                            <div id="bAlloc" >{100-this.state.stockAllocPctState}%</div>
+                                            <span id='portMix'>
+                                                <span id="sAlloc" >{this.state.stockAllocPctState}% stocks</span>
+                                                <span id="bAlloc" >&nbsp; {100-this.state.stockAllocPctState}% bonds</span>                                                                                                 
+                                            </span>
                                         </AccordionSummary>
                                         <AccordionDetails>
                                                 <Slider id="aAlloc" label="Stock Allocation" marks step={5} 
@@ -496,25 +501,22 @@ class SWRCalc extends React.Component {
                                                 onChange={handleFeePctChange} />
                                         </AccordionDetails>
                                     </Accordion>
-                                </ListItem> 
-                                <ListItem>
                                     <Accordion>
                                         <AccordionSummary>
                                             <FormControl>
-                                                <RadioGroup
-                                                    aria-labelledby="projectionTypeID"
-                                                    defaultValue={historicalString}
-                                                    name="radio-buttons-group"
-                                                    row
-                                                    onChange={handleProjectionToggle}
-                                                >
-                                                    <FormControlLabel value={historicalString} control={<Radio />} label="historical" />
-                                                    <FormControlLabel value={monteCarloString} control={<Radio />} label="monte carlo" />
-                                                </RadioGroup>
+                                                <InputLabel id='proj-type-label'>Simulation</InputLabel>
+                                                <Select
+                                                labelId='proj-type-label'
+                                                value={(this.state.monteCarloProjectionState) ? monteCarloString : historicalString}
+                                                label='projection type'
+                                                onChange={handleProjectionToggle}>
+                                                    <MenuItem value={historicalString}>historical</MenuItem>
+                                                    <MenuItem value={monteCarloString}>monte carlo</MenuItem>
+                                                </Select>
                                             </FormControl>
                                         </AccordionSummary>
                                         <AccordionDetails>
-                                            <div disabled={this.state.monteCarloProjectionState}>Historical data from {this.state.startDataYearState} to {this.state.endDataYearState}</div>                                 
+                                            <div disabled={this.state.monteCarloProjectionState}> {this.state.startDataYearState} to {this.state.endDataYearState}</div>                                 
                                             <Slider  
                                             disabled={this.state.monteCarloProjectionState}
                                             marks step={1}
@@ -525,7 +527,9 @@ class SWRCalc extends React.Component {
                                             onChange={handleDataRangeChange}
                                             />
                                         </AccordionDetails>
-                                    </Accordion>
+                                    </Accordion>                                    
+                                </ListItem> 
+                                <ListItem>
                                 </ListItem>
                                 <ListItem >
                                     <Accordion>
