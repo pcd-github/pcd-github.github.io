@@ -445,7 +445,7 @@ class SWRCalc extends React.Component {
                         }} >
 
                             <List> 
-                                <ListItem  >
+                                <ListItem  divider>
                                     <TextField required label="Age" 
                                         sx={{ m: '10px' }}
                                         type="number"
@@ -455,12 +455,9 @@ class SWRCalc extends React.Component {
                                         shrink: true,
                                         }}
                                     />
-                                    <Button variant="outlined" onClick={handleSaveAll} >Save</Button>
-                                </ListItem>
-                                <ListItem divider >
                                     <Accordion>
                                         <AccordionSummary>
-                                            <div >Life expectancy : {this.state.lifeExpectancyState}</div>                                 
+                                            <div >Lifetime: {this.state.lifeExpectancyState}</div>                                 
                                         </AccordionSummary>
                                         <AccordionDetails>
                                             <Slider id="aExpect" label="Life Expectancy" marks step={1} 
@@ -468,7 +465,7 @@ class SWRCalc extends React.Component {
                                                 valueLabelDisplay="auto" value={this.state.lifeExpectancyState}  
                                                 onChange={handleExpectChange} />
                                         </AccordionDetails>
-                                    </Accordion>
+                                    </Accordion>                                    
                                 </ListItem>
                                 <ListItem divider >
                                     <TextField required 
@@ -501,10 +498,12 @@ class SWRCalc extends React.Component {
                                                 onChange={handleFeePctChange} />
                                         </AccordionDetails>
                                     </Accordion>
+                                    </ListItem>
+                                    <ListItem divider >
                                     <Accordion>
                                         <AccordionSummary>
                                             <FormControl>
-                                                <InputLabel id='proj-type-label'>Simulation</InputLabel>
+                                                <InputLabel id='proj-type-label' >Simulation</InputLabel>
                                                 <Select
                                                 labelId='proj-type-label'
                                                 value={(this.state.monteCarloProjectionState) ? monteCarloString : historicalString}
@@ -529,13 +528,12 @@ class SWRCalc extends React.Component {
                                         </AccordionDetails>
                                     </Accordion>                                    
                                 </ListItem> 
-                                <ListItem>
-                                </ListItem>
                                 <ListItem >
+                                    
                                     <Accordion>
                                         <AccordionSummary>
                                             <FormGroup>
-                                                <FormControlLabel control={<Checkbox />} label="include Social Security income" 
+                                                <FormControlLabel control={<Checkbox />} label="Social Security" 
                                                     onChange={handleSSToggle}
                                                 />
                                             </FormGroup>
@@ -561,6 +559,9 @@ class SWRCalc extends React.Component {
                                             </FormControl>
                                         </AccordionDetails>
                                     </Accordion>
+                                </ListItem>
+                                <ListItem>
+                                    <Button variant="outlined" onClick={handleSaveAll} >Save</Button>
                                 </ListItem>
                             </List>                        
                         </Box>
