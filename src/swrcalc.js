@@ -3,18 +3,12 @@ import * as React from "react";
 import { Accordion, AccordionSummary, AccordionDetails, InputLabel, MenuItem } from '@mui/material';
 import { Box } from "@mui/system";
 import Button from '@mui/material/Button';
-import { Checkbox } from "@mui/material";
 import { TextField } from "@mui/material";
 import { List } from "@mui/material";
 import { ListItem } from "@mui/material";
 import { Slider } from "@mui/material";
-import { FormGroup } from "@mui/material";
-import { FormControlLabel } from "@mui/material";
 import { FormControl } from "@mui/material";
-import { FormLabel } from "@mui/material";
 import Select from '@mui/material/Select';
-import { RadioGroup } from "@mui/material";
-import { Radio } from "@mui/material";
 import { Stack } from "@mui/material";
 import { histData, generateSourceData } from "./histdata.js";
 import { getColorStringForRelativeValue, dumpAllToCSVFile } from './common.js';
@@ -51,7 +45,7 @@ class SWRCalc extends React.Component {
             monteCarloProjectionState: defaultMCProjection,
             ssOnState: false,
             socialSecurityIncomeState: defaultSSIncome,
-            socialSecurityAgeState: 67,
+            socialSecurityAgeState: 0,
             useAllHistDataState: true,
             startDataYearState: defaultStartDataYear,
             endDataYearState: defaultEndDataYear,
@@ -129,10 +123,6 @@ class SWRCalc extends React.Component {
             this.setState( {feePctState : newValue} ); 
         }
 
-        const handleSSToggle = (event, newValue) => {
-            this.setState( {ssOnState: newValue} );
-        }
-
         const handleChangeSSAge = (event) => {
             var newValue = +(event.target.value);
             this.setState( {socialSecurityAgeState: newValue});
@@ -205,7 +195,7 @@ class SWRCalc extends React.Component {
 
         const applySpend = (thisCycle) => {
             const ssAge = this.state.socialSecurityAgeState;
-            const ssIncome = (this.state.ssOnState) ? this.state.socialSecurityIncomeState : 0;
+            const ssIncome = (0 !== this.state.socialSecurityAgeState) ? this.state.socialSecurityIncomeState : 0;
 
             // get current spend (currently fixed)
             thisCycle.spend = this.state.spendValueState;
@@ -445,7 +435,7 @@ class SWRCalc extends React.Component {
                         }} >
 
                             <List> 
-                                <ListItem  divider>
+                                <ListItem >
                                     <TextField required label="Age" 
                                         sx={{ m: '10px' }}
                                         type="number"
@@ -455,9 +445,11 @@ class SWRCalc extends React.Component {
                                         shrink: true,
                                         }}
                                     />
+                                </ListItem>
+                                <ListItem divider >
                                     <Accordion>
                                         <AccordionSummary>
-                                            <div >Lifetime: {this.state.lifeExpectancyState}</div>                                 
+                                            <div >Life Expectancy: {this.state.lifeExpectancyState}</div>                                 
                                         </AccordionSummary>
                                         <AccordionDetails>
                                             <Slider id="aExpect" label="Life Expectancy" marks step={1} 
@@ -467,7 +459,7 @@ class SWRCalc extends React.Component {
                                         </AccordionDetails>
                                     </Accordion>                                    
                                 </ListItem>
-                                <ListItem divider >
+                                <ListItem >
                                     <TextField required 
                                     sx={{ m: '10px' }}
                                     type="number" label="Portfolio Value $" 
@@ -479,7 +471,7 @@ class SWRCalc extends React.Component {
                                     defaultValue={defaultSpendValue} 
                                     onChange={handleSpendingValueChange} />
                                 </ListItem>
-                                <ListItem divider >
+                                <ListItem  >
                                     <Accordion>
                                         <AccordionSummary>
                                             <span id='portMix'>
@@ -499,7 +491,7 @@ class SWRCalc extends React.Component {
                                         </AccordionDetails>
                                     </Accordion>
                                     </ListItem>
-                                    <ListItem divider >
+                                    <ListItem >
                                     <Accordion>
                                         <AccordionSummary>
                                             <FormControl>
@@ -507,7 +499,7 @@ class SWRCalc extends React.Component {
                                                 <Select
                                                 labelId='proj-type-label'
                                                 value={(this.state.monteCarloProjectionState) ? monteCarloString : historicalString}
-                                                label='projection type'
+                                                label='Simulation'
                                                 onChange={handleProjectionToggle}>
                                                     <MenuItem value={historicalString}>historical</MenuItem>
                                                     <MenuItem value={monteCarloString}>monte carlo</MenuItem>
@@ -528,35 +520,29 @@ class SWRCalc extends React.Component {
                                         </AccordionDetails>
                                     </Accordion>                                    
                                 </ListItem> 
-                                <ListItem >
-                                    
+                                <ListItem divider >
                                     <Accordion>
                                         <AccordionSummary>
-                                            <FormGroup>
-                                                <FormControlLabel control={<Checkbox />} label="Social Security" 
-                                                    onChange={handleSSToggle}
-                                                />
-                                            </FormGroup>
+                                            <FormControl>
+                                                <InputLabel id='ss-label' >Social Security</InputLabel>
+                                                    <Select
+                                                     labelId='ss-label'
+                                                     value={  this.state.socialSecurityAgeState }
+                                                     label='Social Security'
+                                                     onChange={handleChangeSSAge} >                                                        
+                                                        <MenuItem value={0}> no income </MenuItem>
+                                                        <MenuItem value={62}>starting at 62</MenuItem>
+                                                        <MenuItem value={67}>starting at 67</MenuItem>
+                                                        <MenuItem value={70}>starting at 70</MenuItem>
+                                                    </Select>
+                                            </FormControl>
                                         </AccordionSummary>
                                         <AccordionDetails >
-                                            <TextField disabled={!(this.state.ssOnState)} 
+                                            <TextField disabled={(0 === this.state.socialSecurityAgeState)} 
                                              sx={{ m: '10px' }}
                                              type="number" label="Annual SS $" 
                                              defaultValue={defaultSSIncome}
                                              onChange={handleSocialSecurityIncomeChange} />
-                                            <FormControl disabled={!(this.state.ssOnState)} component="fieldset">
-                                                <FormLabel component="legend">Start at age</FormLabel>
-                                                <RadioGroup
-                                                aria-label="ss-start"
-                                                onChange={handleChangeSSAge}
-                                                row
-                                                defaultValue="67"
-                                                name="radio-buttons-group">
-                                                    <FormControlLabel value="62" control={<Radio />} label="62" />
-                                                    <FormControlLabel value="67" control={<Radio />} label="67" />
-                                                    <FormControlLabel value="70" control={<Radio />} label="70" />
-                                                </RadioGroup>
-                                            </FormControl>
                                         </AccordionDetails>
                                     </Accordion>
                                 </ListItem>
