@@ -2,14 +2,16 @@ import * as d3 from "d3";
 import * as React from "react";
 import { Accordion, AccordionSummary, AccordionDetails, InputLabel, MenuItem } from '@mui/material';
 import { Box } from "@mui/system";
-import Button from '@mui/material/Button';
-import { TextField } from "@mui/material";
+import { FormControl } from "@mui/material";
 import { List } from "@mui/material";
 import { ListItem } from "@mui/material";
 import { Slider } from "@mui/material";
-import { FormControl } from "@mui/material";
-import Select from '@mui/material/Select';
 import { Stack } from "@mui/material";
+import { TextField } from "@mui/material";
+import Button from '@mui/material/Button';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Select from '@mui/material/Select';
+
 import { histData, generateSourceData } from "./histdata.js";
 import { getColorStringForRelativeValue, dumpAllToCSVFile } from './common.js';
 import Chart from './chart.js';
@@ -447,8 +449,8 @@ class SWRCalc extends React.Component {
                                     />
                                 </ListItem>
                                 <ListItem divider >
-                                    <Accordion>
-                                        <AccordionSummary>
+                                    <Accordion >
+                                        <AccordionSummary expandIcon={<ExpandMoreIcon />} >
                                             <div >Life Expectancy: {this.state.lifeExpectancyState}</div>                                 
                                         </AccordionSummary>
                                         <AccordionDetails>
@@ -473,7 +475,7 @@ class SWRCalc extends React.Component {
                                 </ListItem>
                                 <ListItem  >
                                     <Accordion>
-                                        <AccordionSummary>
+                                        <AccordionSummary expandIcon={<ExpandMoreIcon />} >
                                             <span id='portMix'>
                                                 <span id="sAlloc" >{this.state.stockAllocPctState}% stocks</span>
                                                 <span id="bAlloc" >&nbsp; {100-this.state.stockAllocPctState}% bonds</span>                                                                                                 
@@ -490,23 +492,51 @@ class SWRCalc extends React.Component {
                                                 onChange={handleFeePctChange} />
                                         </AccordionDetails>
                                     </Accordion>
-                                    </ListItem>
-                                    <ListItem >
+                                </ListItem>
+                                <ListItem divider >
                                     <Accordion>
-                                        <AccordionSummary>
+                                        <AccordionSummary expandIcon={<ExpandMoreIcon />} >
+                                            Social Security Income
+                                        </AccordionSummary>
+                                        <AccordionDetails >
                                             <FormControl>
-                                                <InputLabel id='proj-type-label' >Simulation</InputLabel>
+                                                <InputLabel id='ss-label' >Start Age</InputLabel>
+                                                <Select
+                                                labelId='ss-label'
+                                                value={  this.state.socialSecurityAgeState }
+                                                label='Start Age'
+                                                onChange={handleChangeSSAge} >                                                        
+                                                    <MenuItem value={0}> never </MenuItem>
+                                                    <MenuItem value={62}>62</MenuItem>
+                                                    <MenuItem value={67}>67</MenuItem>
+                                                    <MenuItem value={70}>70</MenuItem>
+                                                </Select>
+                                            </FormControl>
+                                            <TextField disabled={(0 === this.state.socialSecurityAgeState)} 
+                                             sx={{ m: '10px' }}
+                                             type="number" label="Annual SS $" 
+                                             defaultValue={defaultSSIncome}
+                                             onChange={handleSocialSecurityIncomeChange} />
+                                        </AccordionDetails>
+                                    </Accordion>
+                                </ListItem>
+                                <ListItem >
+                                    <Accordion>
+                                        <AccordionSummary expandIcon={<ExpandMoreIcon />} >
+                                            <div>Simulation Type</div>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <FormControl>
+                                                <InputLabel id='proj-type-label' >Simulation Type</InputLabel>
                                                 <Select
                                                 labelId='proj-type-label'
                                                 value={(this.state.monteCarloProjectionState) ? monteCarloString : historicalString}
-                                                label='Simulation'
+                                                label='Simulation Type'
                                                 onChange={handleProjectionToggle}>
                                                     <MenuItem value={historicalString}>historical</MenuItem>
                                                     <MenuItem value={monteCarloString}>monte carlo</MenuItem>
                                                 </Select>
                                             </FormControl>
-                                        </AccordionSummary>
-                                        <AccordionDetails>
                                             <div disabled={this.state.monteCarloProjectionState}> {this.state.startDataYearState} to {this.state.endDataYearState}</div>                                 
                                             <Slider  
                                             disabled={this.state.monteCarloProjectionState}
@@ -519,35 +549,9 @@ class SWRCalc extends React.Component {
                                             />
                                         </AccordionDetails>
                                     </Accordion>                                    
-                                </ListItem> 
-                                <ListItem divider >
-                                    <Accordion>
-                                        <AccordionSummary>
-                                            <FormControl>
-                                                <InputLabel id='ss-label' >Social Security</InputLabel>
-                                                    <Select
-                                                     labelId='ss-label'
-                                                     value={  this.state.socialSecurityAgeState }
-                                                     label='Social Security'
-                                                     onChange={handleChangeSSAge} >                                                        
-                                                        <MenuItem value={0}> no income </MenuItem>
-                                                        <MenuItem value={62}>starting at 62</MenuItem>
-                                                        <MenuItem value={67}>starting at 67</MenuItem>
-                                                        <MenuItem value={70}>starting at 70</MenuItem>
-                                                    </Select>
-                                            </FormControl>
-                                        </AccordionSummary>
-                                        <AccordionDetails >
-                                            <TextField disabled={(0 === this.state.socialSecurityAgeState)} 
-                                             sx={{ m: '10px' }}
-                                             type="number" label="Annual SS $" 
-                                             defaultValue={defaultSSIncome}
-                                             onChange={handleSocialSecurityIncomeChange} />
-                                        </AccordionDetails>
-                                    </Accordion>
-                                </ListItem>
-                                <ListItem>
                                     <Button variant="outlined" onClick={handleSaveAll} >Save</Button>
+                                </ListItem> 
+                                <ListItem>
                                 </ListItem>
                             </List>                        
                         </Box>
