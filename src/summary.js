@@ -47,6 +47,9 @@ function SummaryCards (props) {
                         <Typography variant="body2" color="textSecondary" component="p">
                             max : {makeCurrency(props.maxendvalue)}
                         </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            min : {makeCurrency(props.minendvalue)}
+                        </Typography>
                     </CardContent>
                 </Card>
                 <Card>

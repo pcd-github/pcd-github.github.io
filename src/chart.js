@@ -11,6 +11,7 @@ function Chart (props) {
     // TODO review all chart state vars after refactoring
     const [avgAdjEndValueState, setAvgAdjEndValueState] = useState(0);
     const [maxAdjEndValueState, setMaxAdjEndValueState] = useState(0);
+    const [minAdjEndValueState, setMinAdjEndValueState] = useState(0);
 
     const [quantile10EndValueState, setQuantile10AdjEndValueState] = useState(0);
     const [quantile25EndValueState, setQuantile25AdjEndValueState] = useState(0);
@@ -229,6 +230,7 @@ function Chart (props) {
     
             setAvgAdjEndValueState(avgAdjEnd);
             setMaxAdjEndValueState(extAdjEnd[1]);
+            setMinAdjEndValueState(extAdjEnd[0]);
 
             setQuantile10AdjEndValueState(quantile10);
             setQuantile25AdjEndValueState(quantile25);
@@ -428,6 +430,7 @@ function Chart (props) {
              quantile75endvalue={quantile75EndValueState}
              quantile90endvalue={quantile90EndValueState}
              maxendvalue={maxAdjEndValueState}
+             minendvalue={minAdjEndValueState}
              medianreturns={medianReturnsState} avgreturns={avgReturnsState}
              minreturns={minReturnsState} maxreturns={maxReturnsState}
              netpositivepct={pctPositiveNetState}

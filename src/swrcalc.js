@@ -467,6 +467,8 @@ class SWRCalc extends React.Component {
                                     type="number" label="Portfolio Value $" 
                                     defaultValue={defaultPortfolioValue} 
                                     onChange={handlePortfolioValueChange} />
+                                </ListItem>
+                                <ListItem  >
                                     <TextField required 
                                     sx={{ m: '10px' }}
                                     type="number" label="Annual Spend $" 
@@ -493,7 +495,7 @@ class SWRCalc extends React.Component {
                                         </AccordionDetails>
                                     </Accordion>
                                 </ListItem>
-                                <ListItem divider >
+                                <ListItem >
                                     <Accordion>
                                         <AccordionSummary expandIcon={<ExpandMoreIcon />} >
                                             Social Security Income
@@ -520,7 +522,7 @@ class SWRCalc extends React.Component {
                                         </AccordionDetails>
                                     </Accordion>
                                 </ListItem>
-                                <ListItem >
+                                <ListItem divider >
                                     <Accordion>
                                         <AccordionSummary expandIcon={<ExpandMoreIcon />} >
                                             <div>Simulation Type</div>
@@ -549,9 +551,9 @@ class SWRCalc extends React.Component {
                                             />
                                         </AccordionDetails>
                                     </Accordion>                                    
-                                    <Button variant="outlined" onClick={handleSaveAll} >Save</Button>
                                 </ListItem> 
                                 <ListItem>
+                                    <Button variant="outlined" onClick={handleSaveAll} >Save</Button>
                                 </ListItem>
                             </List>                        
                         </Box>
