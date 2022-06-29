@@ -49,7 +49,7 @@ function EndValueChart (props) {
     }
 
     const handleMouseDown = (e) => {
-        const thisBin = e.srcElement.__data__;
+        var thisBin = e.srcElement.__data__;
         var colorString = null;
         var zoomMin = null;
         var zoomMax = null;
@@ -65,10 +65,11 @@ function EndValueChart (props) {
             setSelectedBinDataState(thisBin);
         }
         else {
+            thisBin = null;
             setSelectedBinDataState(null);
         }
 
-        props.zoomcallback(zoomMin, zoomMax, colorString, selectedBin);
+        props.zoomcallback(zoomMin, zoomMax, colorString, selectedBin, thisBin);
     }
 
     React.useEffect(() => {
@@ -246,7 +247,6 @@ function EndValueChart (props) {
 
     return (
         <div> 
-            <Button disabled={null === props.selectedbin} variant="outlined" onClick={handleSaveBin} >Save to CSV</Button>
             <svg id={svgBinChartID}  
                 width={totalWidth}
                 height={totalHeight} 

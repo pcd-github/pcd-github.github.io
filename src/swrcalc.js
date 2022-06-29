@@ -13,7 +13,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Select from '@mui/material/Select';
 
 import { histData, generateSourceData } from "./histdata.js";
-import { getColorStringForRelativeValue, dumpAllToCSVFile } from './common.js';
+import { getColorStringForRelativeValue, dumpAllToCSVFile, dumpBinToCSVFile } from './common.js';
 import Chart from './chart.js';
 
 const defaultPortfolioValue = 1250000;
@@ -55,6 +55,7 @@ class SWRCalc extends React.Component {
             maxZoomValueState: null,
             zoomColorState: null,
             selectedBinState: null,
+            selectedBinDataState: null,
         }
 
         this.sourceData = generateSourceData(this.state.monteCarloProjectionState, 
@@ -63,11 +64,12 @@ class SWRCalc extends React.Component {
                                              this.state.endDataYearState);
     }
 
-    zoomChart (minZoom, maxZoom, colorKey, selectedBin) {
+    zoomChart (minZoom, maxZoom, colorKey, selectedBin, binData) {
         this.setState( {minZoomValueState : minZoom} );
         this.setState( {maxZoomValueState : maxZoom} );
         this.setState( {zoomColorState : colorKey} );
         this.setState( {selectedBinState : selectedBin });
+        this.setState( {selectedBinDataState : binData})
     }
 
     render () { 
@@ -91,7 +93,15 @@ class SWRCalc extends React.Component {
         }
 
         const handleSaveAll = (event) => {
-            dumpAllToCSVFile(allCycles);
+
+            if (null === this.state.selectedBinDataState) {
+                console.log('save all');
+                dumpAllToCSVFile(allCycles);
+            }
+            else {
+                console.log('save bin');
+                dumpBinToCSVFile(this.state.selectedBinDataState);               
+            }
         }
 
         const handleExpectChange = (event, newValue) => {
