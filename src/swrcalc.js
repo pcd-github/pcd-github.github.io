@@ -92,7 +92,7 @@ class SWRCalc extends React.Component {
             }                          
         }
 
-        const handleSaveAll = (event) => {
+        const handleSave = (event) => {
 
             if (null === this.state.selectedBinDataState) {
                 console.log('save all');
@@ -563,7 +563,7 @@ class SWRCalc extends React.Component {
                                     </Accordion>                                    
                                 </ListItem> 
                                 <ListItem>
-                                    <Button variant="outlined" onClick={handleSaveAll} >Save</Button>
+                                    <Button variant="outlined" onClick={handleSave} >Save</Button>
                                 </ListItem>
                             </List>                        
                         </Box>

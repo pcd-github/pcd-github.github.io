@@ -44,10 +44,6 @@ function EndValueChart (props) {
         return retVal;
     }
 
-    const handleSaveBin = (e) => {
-        dumpBinToCSVFile(selectedBinDataState);
-    }
-
     const handleMouseDown = (e) => {
         var thisBin = e.srcElement.__data__;
         var colorString = null;
