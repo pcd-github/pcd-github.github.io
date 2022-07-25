@@ -32,31 +32,39 @@ calculators have also used.  They also assume broad index/ETF investment
 strategy - using a subset of the options (as in managed or sector) funds could
 yield significantly different results.
 
-One other note about the historical data - Currently, the years are applied 
-sequentially only.  This will limit the number of cycles run to be
-(end year - start year) - lifetime.  This is why the number of cycles (and lines
-in the chart) change when you tweak the historical range, life expectancy, or 
-age.  I'm considering adding monte carlo simulation down the road.
+You can either do historical sequences or monte carlo simulations.  
+
+Cycle numbers vary when using historical sequences, depending on current age, 
+life expectancy and the years of historical data you wish to use.
+
+Monte Carlo simulations give you 1000 cycles with randomly-ordered historical 
+results.  
+
+Currently asset allocation is limited to equities and bonds (presuming 
+whole-market indeces).  I'm considering adding the ability to allocate some 
+assets in cash as well.
 
 You can choose to include social security, starting at age 62, 67, or 70.  There 
 are currently no other options for incorporating additional income.
 
 # Results
-The summary cards at the top give a very high-levle overview of what your inputs
+The summary cards at the top give a very high-level overview of what your inputs
 will give you.  I've kept this pretty concise, as I visual data speaks to me 
 more.
 
-Success rate is the first thing people tend to look at.  Given market fluctuation, 
-I thought it useful to see what one might expect for net-positive years too.  This is whether you're up or down in overall value from the previous year, factoring your net returns and total spending.  The minimum/median failure ages also seem useful.
+Success rate is the first thing people tend to look at.  The minimum failure age also seems useful.
+
+Given market fluctuation, I thought it useful to see what one might expect for net-positive years too.  This is whether you're up or down in overall value from the previous year, factoring your net returns and total spending.  I show the % of cycles in which you end up with more than you started with.  Some folks find it useful for determining whether they 
+can spend more/less, depending on what their goals are.
 
 End value and combined return % (given your asset allocation) round out the summary data.
 
 The multi-line chart with different colors shows what the individual cycles using historic data look like with your inputs.  The colors (from green to red) reflect the end value of your portfolio.  At this writing the colors mean this :
 
-Dark Green : 3-20x of the original value
-Lighter Green : 1.5-3x of original value
-Light Olive : 0.5-1.5 of original value
-Orange : Between $0.01 and 50% of original value
+Dark Green : 5-100x of the original value
+Lighter Green : 1.33-5x of original value
+Light Olive : original value +- 33%
+Orange : Between $0.01 and 33% of original value
 Red : 0 (or failures)
 
 The bin chart at the bottom can be useful for looking at the categories of results - good to bad.  Selecting a 'bin' will zoom the line chart into that category of result.  Hovering over a bin will tell you what % of overall results as well as the range of values is in each bin.
