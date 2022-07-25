@@ -7,16 +7,16 @@ you can withdraw from savings over time without running out of money.
 The summary cards, results chart, and result bars on the right reflect
 whatever the inputs provided on the left give you.
 
-# Inputs
-Age and Life Expectancy reflect how long you need your funds to last.
+## Inputs
+Basic parameters for your calculation include portfolio value, 
+current age, life expectancy, and how much you plan to spend
+each year.
 
-Portfolio Value reflects the total amount saved.
+Annual Spend is what you think you need, in order to live as you 
+wish.  Currently the calulator is limited to inflation-adjusted only.  
+I may do % of portfolio when time permits.
 
-Annual Spend is what your wanting (or needing) to live as you want.  Currently
-the calulator is limited to inflation-adjusted only.  I may do fixed % when time 
-permits.
-
-## Asset Allocation and Fees
+### Asset Allocation and Fees
 
 The Stock/Bond asset mix slider is how you've allocated your savings.  
 Currently asset allocation is limited to equities and bonds (presuming 
@@ -27,12 +27,12 @@ Annual fee % is what you're paying someone for the privilege of holding
 (or managing) your money.  The default (low) value reflects my own bias towards 
 low-cost index funds and ETFs.
 
-## Additional Income
+### Additional Income
 
 You can choose to include social security, starting at age 62, 67, or 70.  There 
 are currently no other options for incorporating additional income.
 
-## Simulation Types - Historical vs Monte Carlo
+### Simulation Types - Historical vs Monte Carlo
 
 You can either do historical sequences or monte carlo simulations. 
 
@@ -50,8 +50,12 @@ life expectancy and the years of historical data you wish to use.
 Monte Carlo simulations give you 1000 cycles with randomly-ordered historical 
 results.  
 
+## Results
 
-# Results
+Results are shown in summary, graphs of all sequences over time, and 'bins' (ranges)
+of results.
+
+### Summary Cards
 The summary cards at the top give a very high-level overview of what your inputs
 will give you.  I've kept this pretty concise, as I visual data speaks to me 
 more.
@@ -63,7 +67,14 @@ can spend more/less, depending on what their goals are.
 
 End value and combined return % (given your asset allocation) round out the summary data.
 
-## Bins of results
+### Graphs
+
+These are all of the cycles for your simulation plotted by year.  It's useful for seeing
+how asset allocation, spending, and inflation interact over time.  You can hover over individual 
+cycles for bolded lines, and click on it to save it to CSV.  If you've selected a specific 
+results bin, the graph will 'zoom' into those cycles.
+
+### Result 'Bins'
 
 The multi-line chart with different colors shows what the individual cycles using historic data look like with your inputs.  The colors (from green to red) reflect the end value of your portfolio in 'bins'.  At this writing the colors mean this :
 
