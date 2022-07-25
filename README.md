@@ -32,6 +32,8 @@ calculators have also used.  They also assume broad index/ETF investment
 strategy - using a subset of the options (as in managed or sector) funds could
 yield significantly different results.
 
+## Simulation Types - Historical vs Monte Carlo
+
 You can either do historical sequences or monte carlo simulations.  
 
 Cycle numbers vary when using historical sequences, depending on current age, 
@@ -40,9 +42,13 @@ life expectancy and the years of historical data you wish to use.
 Monte Carlo simulations give you 1000 cycles with randomly-ordered historical 
 results.  
 
+## Asset Allocation
+
 Currently asset allocation is limited to equities and bonds (presuming 
 whole-market indeces).  I'm considering adding the ability to allocate some 
 assets in cash as well.
+
+## Additional Income
 
 You can choose to include social security, starting at age 62, 67, or 70.  There 
 are currently no other options for incorporating additional income.
@@ -59,15 +65,22 @@ can spend more/less, depending on what their goals are.
 
 End value and combined return % (given your asset allocation) round out the summary data.
 
-The multi-line chart with different colors shows what the individual cycles using historic data look like with your inputs.  The colors (from green to red) reflect the end value of your portfolio.  At this writing the colors mean this :
+## Bins of results
+
+The multi-line chart with different colors shows what the individual cycles using historic data look like with your inputs.  The colors (from green to red) reflect the end value of your portfolio in 'bins'.  At this writing the colors mean this :
 
 Dark Green : 5-100x of the original value
 Lighter Green : 1.33-5x of original value
 Light Olive : original value +- 33%
-Orange : Between $0.01 and 33% of original value
-Red : 0 (or failures)
+Orange : Between $0.01 and 67% of original value
+Red : Failures (you run out of money)
 
-The bin chart at the bottom can be useful for looking at the categories of results - good to bad.  Selecting a 'bin' will zoom the line chart into that category of result.  Hovering over a bin will tell you what % of overall results as well as the range of values is in each bin.
+The bin chart at the bottom can be useful for looking at the categories of results - good to bad.  Selecting a bin will zoom the line chart into that category of result.  Hovering over a bin will tell you what % of overall results as well as the range of values is in each bin.
+
+## Saving Results to CSV
+
+You can save all cycles (or the currently selected bin.  You can also save an individual cycle's data
+by hovering/clicking on it.
 
 # Getting Started with Create React App
 
