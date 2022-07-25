@@ -16,13 +16,25 @@ Annual Spend is what your wanting (or needing) to live as you want.  Currently
 the calulator is limited to inflation-adjusted only.  I may do fixed % when time 
 permits.
 
+## Asset Allocation and Fees
+
 The Stock/Bond asset mix slider is how you've allocated your savings.  
-It does not permit you to allocate a lot into cash, gold, or other 
-commodities.  Maybe I'll expand this over time.
+Currently asset allocation is limited to equities and bonds (presuming 
+whole-market indeces).  I'm considering adding the ability to allocate some 
+assets in cash as well.
 
 Annual fee % is what you're paying someone for the privilege of holding
 (or managing) your money.  The default (low) value reflects my own bias towards 
 low-cost index funds and ETFs.
+
+## Additional Income
+
+You can choose to include social security, starting at age 62, 67, or 70.  There 
+are currently no other options for incorporating additional income.
+
+## Simulation Types - Historical vs Monte Carlo
+
+You can either do historical sequences or monte carlo simulations. 
 
 Historical data range determines which years we apply to your historically
 based results.  This allows you to emulate past patterns of bull/bear markets 
@@ -32,26 +44,12 @@ calculators have also used.  They also assume broad index/ETF investment
 strategy - using a subset of the options (as in managed or sector) funds could
 yield significantly different results.
 
-## Simulation Types - Historical vs Monte Carlo
-
-You can either do historical sequences or monte carlo simulations.  
-
 Cycle numbers vary when using historical sequences, depending on current age, 
 life expectancy and the years of historical data you wish to use.
 
 Monte Carlo simulations give you 1000 cycles with randomly-ordered historical 
 results.  
 
-## Asset Allocation
-
-Currently asset allocation is limited to equities and bonds (presuming 
-whole-market indeces).  I'm considering adding the ability to allocate some 
-assets in cash as well.
-
-## Additional Income
-
-You can choose to include social security, starting at age 62, 67, or 70.  There 
-are currently no other options for incorporating additional income.
 
 # Results
 The summary cards at the top give a very high-level overview of what your inputs
