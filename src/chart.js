@@ -150,13 +150,17 @@ function Chart (props) {
         dumpCycleToCSVFile(ds);
     }
 
-    const getAggReturns = (allCycleData) => {
+    const getAllReturns = (allCycleData) => {
         var retVal = [];
 
         for (var iCycle = 0; iCycle < allCycleData.length; iCycle++) {
             for (var year = 0; year < allCycleData[iCycle].length; year++) {
-                const oneYear = allCycleData[iCycle][year];
-                retVal.push(oneYear.aggReturn);
+                const oneYear = {
+                    'equityReturn': allCycleData[iCycle][year].equityReturn,
+                    'bondReturn': allCycleData[iCycle][year].bondReturn,
+                    'aggReturn': allCycleData[iCycle][year].aggReturn,
+                }
+                retVal.push(oneYear);
             }
         }
 
@@ -203,10 +207,10 @@ function Chart (props) {
             var quantile75 = d3.quantile(allCyclesMeta, 0.75, (d) => d.adjEndCycleValue);
             var quantile90 = d3.quantile(allCyclesMeta, 0.90, (d) => d.adjEndCycleValue);
 
-            var aggReturns = getAggReturns(allCycles);
-            var avgReturns = d3.mean(aggReturns);
-            var medianReturns = d3.median(aggReturns);
-            var extReturns = d3.extent(aggReturns);
+            var allReturns = getAllReturns(allCycles);
+            var avgReturns = d3.mean(allReturns, (d) => d.aggReturn);
+            var medianReturns = d3.median(allReturns, (d) => d.aggReturn);
+            var extReturns = d3.extent(allReturns, (d) => d.aggReturn);
     
             var netDeltas = getNetDeltas(allCycles);
             var pctPositiveNet = getPctPositiveNet(netDeltas);
@@ -242,7 +246,7 @@ function Chart (props) {
             setMedianReturnsState(medianReturns);
             setMinReturnsState(extReturns[0]);
             setMaxReturnsState(extReturns[1]);
-    
+
             setPctPositiveNetState(pctPositiveNet);
             setNumFailsState(numFails);
             setNumGreaterThanStartState(numGreaterThanStart);
