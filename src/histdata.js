@@ -399,7 +399,7 @@ export const histData = [
     {
         year:1954, cpi: 26.9, dividends: 0.05721406,
         bonds: 0.0248, gold: -0.00283688, equity: 0.3982718,
-            },
+    },
     {
         year:1955, cpi: 26.7, dividends: 0.04344579,
         bonds: 0.0261, gold: 0.00142248, equity: 0.24016854
@@ -668,10 +668,14 @@ export const histData = [
         year:2021, cpi: 261.58, dividends: 0.0153,
         bonds: 0.0108, gold: 0, equity: 0.2056  
     },
+    {
+        year:2022, cpi: 281.15, dividends: 0.0133,
+        bonds: 0.0176, gold: 0, equity: -0.1257
+    },
     /*
     {
-        year:2022, cpi: 281.15, dividends: ,
-        bonds: 0.01760, gold: 0, equity: 
+        year:2023, cpi: 296.34, dividends: ,
+        bonds: 0.0343, gold: 0, equity: 
     },
     */
 ];

@@ -268,7 +268,7 @@ class SWRCalc extends React.Component {
         const calcAdjustedEndValue = (thisCycle) => {
             thisCycle.adjEndValue = thisCycle.endValue / thisCycle.cumulativeCPI;
         }
-/*
+ /*
         const dumpYear = (oneYear) => {
             console.log(oneYear.age + 
                         ' y:' + oneYear.year +
