@@ -62,6 +62,22 @@ export const checkDistribution = (indeces) => {
     }
 }
 
+// Data is pulled from Robert Shiller's site :
+// http://www.econ.yale.edu/~shiller/data/ie_data.xls
+//
+// Here is how our yearly table data is computed from the Shiller data :
+// CPI - Taken directly from CPI column for January of the calendar year you want
+//       (2022 CPI taken from cell E1821, row labeled 2022, value 281.15)
+// Dividends - ratio of column 'div' over column s&p for January of year
+//             (2022 was 60.92 / 4573.83 -> 0.0133)
+// Bonds - Taken directly from column labeled 'Long Interest Rate GS10' from January
+//         and converted from percentage format (x / 100)
+// Gold - not gathered, because I don't use it.
+// Equity - calculated % difference between S&P indeces between year+1 and year,
+//          using January values.  
+//          e.g. - overall 2021 value is Jan 2022 value / Jan 2021 - 1
+//                 (4573.82 / 3793.75 - 1)
+//
 
 export const histData = [
     {
