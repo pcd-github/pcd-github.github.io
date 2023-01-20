@@ -13,7 +13,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Select from '@mui/material/Select';
 
 import { histData, generateSourceData } from "./histdata.js";
-import { getColorStringForRelativeValue, dumpAllToCSVFile, dumpBinToCSVFile } from './common.js';
+import { getColorStringForRelativeValue, dumpAllToCSVFile, dumpBinToCSVFile, makeCurrency } from './common.js';
 import Chart from './chart.js';
 
 const defaultPortfolioValue = 1250000;
@@ -428,8 +428,39 @@ class SWRCalc extends React.Component {
             }
         }
 
+        const cullOutliers = () => {
+            // detect and eliminate outliers +- 3 std dev from mean adj end value
+            var sdEndValBracket  = d3.deviation(allCyclesMeta, (d) => d.adjEndCycleValue) * 3;
+            var meanEndVal = d3.mean(allCyclesMeta, (d) => d.adjEndCycleValue);
+            const lowThreshold = Math.max(0, meanEndVal - sdEndValBracket);
+            const highThreshold = meanEndVal + sdEndValBracket;
+            var outlierCount = 0;
+            var validCycleCount = 0;
+            var newAllCycles = [];
+            var newAllCyclesMeta = [];    
+
+            for (var i = 0; i < allCyclesMeta.length; i++) {
+                if ( (lowThreshold <= allCyclesMeta[i].adjEndCycleValue) && 
+                     (highThreshold >= allCyclesMeta[i].adjEndCycleValue) ) {
+                    // copy valid cycle to new array
+                    newAllCycles[validCycleCount] = allCycles[i];
+                    // copy metadata to new meta array
+                    newAllCyclesMeta[validCycleCount] = allCyclesMeta[i];
+                    // increment valid cycle counter
+                    validCycleCount++;
+                }
+                else {
+                    console.log('outlier : ' +  makeCurrency(allCyclesMeta[i].adjEndCycleValue));
+                    outlierCount++;
+                }
+            }
+            allCycles = newAllCycles;
+            allCyclesMeta = newAllCyclesMeta;
+        }
+
         if (null != this.sourceData) {
             calcCycles(this.sourceData);
+            cullOutliers ();
         }
 
         return (
@@ -577,10 +608,7 @@ class SWRCalc extends React.Component {
                        portmax={portMax}
                        cycledata={allCycles}
                        cyclemeta={allCyclesMeta}
-                       numcycles={ (null != this.sourceData) 
-                                  ? (this.sourceData.length / 
-                                     (this.state.lifeExpectancyState - this.state.currentAgeState + 1) ) 
-                                  : 0  }
+                       numcycles={ allCycles.length  }
                        currentage={this.state.currentAgeState}
                        lifeexpectancy={this.state.lifeExpectancyState}
                        minzoom={this.state.minZoomValueState}
