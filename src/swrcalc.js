@@ -13,7 +13,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Select from '@mui/material/Select';
 
 import { histData, generateSourceData } from "./histdata.js";
-import { getColorStringForRelativeValue, dumpAllToCSVFile, dumpBinToCSVFile, makeCurrency } from './common.js';
+import { getColorStringForRelativeValue, dumpAllToCSVFile, dumpBinToCSVFile } from './common.js';
 import Chart from './chart.js';
 
 const defaultPortfolioValue = 1250000;
@@ -437,7 +437,9 @@ class SWRCalc extends React.Component {
             var outlierCount = 0;
             var validCycleCount = 0;
             var newAllCycles = [];
-            var newAllCyclesMeta = [];    
+            var newAllCyclesMeta = [];   
+            
+            portMin = portMax = 0;
 
             for (var i = 0; i < allCyclesMeta.length; i++) {
                 if ( (lowThreshold <= allCyclesMeta[i].adjEndCycleValue) && 
@@ -448,10 +450,9 @@ class SWRCalc extends React.Component {
                     newAllCyclesMeta[validCycleCount] = allCyclesMeta[i];
                     // increment valid cycle counter
                     validCycleCount++;
-                }
-                else {
-                    console.log('outlier : ' +  makeCurrency(allCyclesMeta[i].adjEndCycleValue));
-                    outlierCount++;
+                    // update the portfolio min/max values
+                    portMin = Math.min(portMin, allCyclesMeta[i].extent[0]);
+                    portMax = Math.max(portMax, allCyclesMeta[i].extent[1]);    
                 }
             }
             allCycles = newAllCycles;
