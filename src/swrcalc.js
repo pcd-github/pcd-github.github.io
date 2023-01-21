@@ -573,7 +573,7 @@ class SWRCalc extends React.Component {
                                 <ListItem divider >
                                     <Accordion>
                                         <AccordionSummary expandIcon={<ExpandMoreIcon />} >
-                                            <div>Simulation Type</div>
+                                            <div>{(this.state.monteCarloProjectionState) ? monteCarloString : historicalString} simulation</div>
                                         </AccordionSummary>
                                         <AccordionDetails>
                                             <FormControl>
