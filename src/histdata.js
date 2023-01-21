@@ -23,7 +23,7 @@ const getNumberOfCycles = (mcProjection, lifespan, startDataYear, endDataYear) =
 const getRandomInteger = (minVal, maxVal) => {
     minVal = Math.ceil(minVal);
     maxVal = Math.floor(maxVal);
-    return Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;        
+    return Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
 }
 
 export const generateSourceData = (mcProjection, thisLifetime, startDataYear, endDataYear) => {

@@ -13,7 +13,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Select from '@mui/material/Select';
 
 import { histData, generateSourceData } from "./histdata.js";
-import { getColorStringForRelativeValue, dumpAllToCSVFile, dumpBinToCSVFile } from './common.js';
+import { getColorStringForRelativeValue, dumpAllToCSVFile, dumpBinToCSVFile, makeCurrency } from './common.js';
 import Chart from './chart.js';
 
 const defaultPortfolioValue = 1250000;
@@ -22,7 +22,7 @@ const defaultExpectancy = 95;
 const defaultSpendValue = 50000;
 const defaultStocks = 80;
 const defaultFeePct = 0.18;
-const defaultSSIncome = 20000;
+const defaultSSIncome = 0;
 const defaultStartDataYear = histData[0].year;
 const defaultEndDataYear = histData[histData.length - 1].year;
 const maxExpectancy = 120;
@@ -45,9 +45,8 @@ class SWRCalc extends React.Component {
             stockAllocPctState: defaultStocks,
             feePctState: defaultFeePct,
             monteCarloProjectionState: defaultMCProjection,
-            ssOnState: false,
             socialSecurityIncomeState: defaultSSIncome,
-            socialSecurityAgeState: 0,
+            socialSecurityAgeState: 67,
             useAllHistDataState: true,
             startDataYearState: defaultStartDataYear,
             endDataYearState: defaultEndDataYear,
@@ -74,6 +73,14 @@ class SWRCalc extends React.Component {
 
     render () { 
 
+        const ssAgeSliderMarks = [
+            {value : this.state.currentAgeState, label : this.state.currentAgeState },
+            {value : 62, label : '62'},
+            {value : 67, label : '67'},
+            {value : 70, label : '70'},
+            {value : this.state.lifeExpectancyState, label : this.state.lifeExpectancyState },
+        ];    
+
         var portMin = this.state.portfolioValueState;
         var portMax = this.state.portfolioValueState;
         var allCycles = [];
@@ -88,7 +95,10 @@ class SWRCalc extends React.Component {
                                                      this.state.startDataYearState,
                                                      this.state.endDataYearState);
 
-                this.setState( {currentAgeState : newValue } ); 
+                this.setState( { currentAgeState : newValue } ); 
+                if (newValue >  this.state.socialSecurityAgeState) {
+                    this.setState( { socialSecurityAgeState : newValue } );
+                }
             }                          
         }
 
@@ -540,22 +550,18 @@ class SWRCalc extends React.Component {
                                 <ListItem >
                                     <Accordion>
                                         <AccordionSummary expandIcon={<ExpandMoreIcon />} >
-                                            Social Security Income
+                                            Social Security: {makeCurrency(this.state.socialSecurityIncomeState)} at {this.state.socialSecurityAgeState} 
                                         </AccordionSummary>
                                         <AccordionDetails >
-                                            <FormControl>
-                                                <InputLabel id='ss-label' >Start Age</InputLabel>
-                                                <Select
-                                                labelId='ss-label'
-                                                value={  this.state.socialSecurityAgeState }
-                                                label='Start Age'
-                                                onChange={handleChangeSSAge} >                                                        
-                                                    <MenuItem value={0}> never </MenuItem>
-                                                    <MenuItem value={62}>62</MenuItem>
-                                                    <MenuItem value={67}>67</MenuItem>
-                                                    <MenuItem value={70}>70</MenuItem>
-                                                </Select>
-                                            </FormControl>
+
+                                            <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
+                                                <Slider valueLabelDisplay="auto" 
+                                                        min={this.state.currentAgeState} max={this.state.lifeExpectancyState}
+                                                        marks={ ssAgeSliderMarks }
+                                                        value={this.state.socialSecurityAgeState} 
+                                                        onChange={handleChangeSSAge} />
+                                            </Stack>
+                                            
                                             <TextField disabled={(0 === this.state.socialSecurityAgeState)} 
                                              sx={{ m: '10px' }}
                                              type="number" label="Annual SS $" 
