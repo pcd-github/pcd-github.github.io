@@ -444,7 +444,6 @@ class SWRCalc extends React.Component {
             var meanEndVal = d3.mean(allCyclesMeta, (d) => d.adjEndCycleValue);
             const lowThreshold = Math.max(0, meanEndVal - sdEndValBracket);
             const highThreshold = meanEndVal + sdEndValBracket;
-            var outlierCount = 0;
             var validCycleCount = 0;
             var newAllCycles = [];
             var newAllCyclesMeta = [];   

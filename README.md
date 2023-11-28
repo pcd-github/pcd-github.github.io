@@ -95,6 +95,12 @@ by hovering/clicking on it.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+To get started with this project using vscode : 
+- clone this repo locally and make sure you've got node installed
+- from a terminal window inside the debugger 
+    - at the root of the repo, run 'npm install' to regenerate the node modules
+    - run 'npm start' to get things running on localhost
+
 ## Available Scripts
 
 In the project directory, you can run:
