@@ -221,7 +221,7 @@ function EndValueChart (props) {
                     .attr("transform", function(d) { return "translate(" + xScale(d.x0) + "," + yScale(d.length) + ")"; })
                     .attr("width", function(d) { return xScale(d.x1) - xScale(d.x0) -1 ; })
                     .attr("height", function(d) { return boundedHeight - yScale(d.length); })
-                    .style("fill",  function(d) { var retVal = getColorStringForRelativeValue(d.x1 / props.startvalue); console.log('[' + d.x0 + ',' + d.x1 + ')' + ' ' + retVal); return retVal;})
+                    .style("fill",  function(d) { return getColorStringForRelativeValue(d.x1 / props.startvalue);})
                     .style("opacity", function(d) { return getBinOpacity(d.x0); } )
                     .on('click', handleMouseDown);
 
