@@ -686,12 +686,10 @@ export const histData = [
     },
     {
         year:2022, cpi: 281.15, dividends: 0.0133,
-        bonds: 0.0176, gold: 0, equity: -0.1257
+        bonds: 0.0176, gold: 0, equity: -0.1341
     },
-    /*
     {
-        year:2023, cpi: 296.34, dividends: ,
-        bonds: 0.0343, gold: 0, equity: 
+        year:2023, cpi: 299.17, dividends: 0.01700,
+        bonds: 0.0353, gold: 0, equity: 0.21586
     },
-    */
 ];

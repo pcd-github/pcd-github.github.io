@@ -1,12 +1,14 @@
+
 import * as d3 from "d3";
 
 export const portfolioValueTextID = 'portfoliovaluetext';
 const perRunClass = 'perrundata';
+const errorColorString = 'Purple';
 const failureColorString = 'Red';
 const lowValueColorString = 'Orange';
+const midValueColorString = 'DarkKhaki';
 const highValueColorString = 'LimeGreen';
 const maxValueColorString = 'ForestGreen';
-const midValueColorString = 'DarkKhaki';
 const portfolioLineClass = 'portfolioline';
 const startValueMargin = 0.33;
 const thresholdValues = [0, 1 - startValueMargin, 1 + startValueMargin, 5, 100];
@@ -14,7 +16,6 @@ const unselectedOpacity = 0.2;
 const selectedOpacity = 1.0;
 export const margin = { top: 20, right: 65, bottom: 40, left: 65 };
 export const marginTranslate = "translate(" + margin.left + "," + margin.top + ")";
-
 export const getSelectedOpacity = () => {
     return selectedOpacity;
 }
@@ -61,22 +62,31 @@ export const getThresholdValues = () => {
 }
 
 export const getColorStringForRelativeValue = (ratioValue) => {
-    var retValue = midValueColorString;
+    var retValue = errorColorString;
 
-    ratioValue = Math.round((ratioValue + Number.EPSILON) * 100000000) / 100000000;
-    if (0 >= ratioValue) {
-        retValue = getFailureColorString();
-    }
-    else if (ratioValue < (1 - startValueMargin)) {
-        retValue = getLowValueColorString();
-    }
-    else if (ratioValue >= (1 + startValueMargin)) {
-        if (ratioValue >= (thresholdValues[thresholdValues.length-2])) {
-            retValue = getMaxValueColorString();
+    if (0 < ratioValue) {
+        // low bucket
+        if ( ratioValue <= thresholdValues[1] ) {
+            retValue = lowValueColorString;
+        }
+        // mid bucket
+        else if ( ratioValue <= thresholdValues[2] ) {
+            retValue = midValueColorString;
+        }
+        // high bucket
+        else if ( ratioValue <= thresholdValues[3] ) {
+            retValue = highValueColorString;
+        }
+        // max bucket
+        else if ( ratioValue <= thresholdValues[4] ) {
+            retValue = maxValueColorString;
         }
         else {
-            retValue = getHighValueColorString();
+            retValue = errorColorString;
         }
+    }
+    else {
+        retValue = failureColorString;
     }
 
     return retValue;

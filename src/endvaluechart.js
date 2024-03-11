@@ -51,9 +51,8 @@ function EndValueChart (props) {
         var selectedBin = null;
 
         if (props.selectedbin !== thisBin.x0) {
-            const valueRatio = (thisBin.x0) / props.startvalue;
             var binExt = getBinExtents(thisBin);
-            colorString = getColorStringForRelativeValue(valueRatio);   
+            colorString = getColorStringForRelativeValue(thisBin.x1 / props.startvalue);   
             zoomMin = binExt[0];
             zoomMax = binExt[1]; 
             selectedBin = thisBin.x0;
@@ -75,7 +74,7 @@ function EndValueChart (props) {
     
             // create failure bin
             currencyThresholds[0] = 0;
-            currencyThresholds[1] = 0.01;
+            currencyThresholds[1] = Number.MIN_VALUE;
             // start at index 1, as we've handled the zero case.  
             // Consider removing zero from the common thresholds.
             // for now, offset the first entry in the currency array to accomodate the failure bin.
@@ -222,7 +221,7 @@ function EndValueChart (props) {
                     .attr("transform", function(d) { return "translate(" + xScale(d.x0) + "," + yScale(d.length) + ")"; })
                     .attr("width", function(d) { return xScale(d.x1) - xScale(d.x0) -1 ; })
                     .attr("height", function(d) { return boundedHeight - yScale(d.length); })
-                    .style("fill",  function(d) { return getColorStringForRelativeValue(d.x0 / props.startvalue);})
+                    .style("fill",  function(d) { var retVal = getColorStringForRelativeValue(d.x1 / props.startvalue); console.log('[' + d.x0 + ',' + d.x1 + ')' + ' ' + retVal); return retVal;})
                     .style("opacity", function(d) { return getBinOpacity(d.x0); } )
                     .on('click', handleMouseDown);
 
