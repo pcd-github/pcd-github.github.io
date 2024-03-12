@@ -9,7 +9,6 @@ import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getP
 function Chart (props) {
   
     // TODO review all chart state vars after refactoring
-    const [avgAdjEndValueState, setAvgAdjEndValueState] = useState(0);
     const [maxAdjEndValueState, setMaxAdjEndValueState] = useState(0);
     const [minAdjEndValueState, setMinAdjEndValueState] = useState(0);
 
@@ -17,14 +16,11 @@ function Chart (props) {
     const [quantile25EndValueState, setQuantile25AdjEndValueState] = useState(0);
     const [quantile50EndValueState, setQuantile50AdjEndValueState] = useState(0);
     const [quantile75EndValueState, setQuantile75AdjEndValueState] = useState(0);
-    const [quantile90EndValueState, setQuantile90AdjEndValueState] = useState(0);
 
-    const [avgCAGRState, setAvgCAGRState] = useState(0);
     const [medianCAGRState, setMedianCAGRState] = useState(0);
     const [minCAGRState, setMinCAGRState] = useState(0);
     const [maxCAGRState, setMaxCAGRState] = useState(0);
 
-    const [avgReturnsState, setAvgReturnsState] = useState(0);
     const [medianReturnsState, setMedianReturnsState] = useState(0);
     const [minReturnsState, setMinReturnsState] = useState(0);
     const [maxReturnsState, setMaxReturnsState] = useState(0);
@@ -155,17 +151,17 @@ function Chart (props) {
         dumpCycleToCSVFile(ds);
     }
 
-    const getAllReturns = (allCycleData) => {
+    const calcAllReturns = (allCycleData) => {
         var retVal = [];
-
         for (var iCycle = 0; iCycle < allCycleData.length; iCycle++) {
             for (var year = 0; year < allCycleData[iCycle].length; year++) {
-                const oneYear = {
-                    'equityReturn': allCycleData[iCycle][year].equityReturn,
-                    'bondReturn': allCycleData[iCycle][year].bondReturn,
-                    'aggReturn': allCycleData[iCycle][year].aggReturn,
-                }
-                retVal.push(oneYear);
+                // deduct the withdrawal amount from the start value
+                // divide end over start for appreciation value
+                var oneYearData = allCycleData[iCycle][year];
+
+                var oneYearAppr = (oneYearData.endValue / 
+                                    (oneYearData.beginValue - oneYearData.actualSpend)) - 1;
+                retVal.push(oneYearAppr);
             }
         }
 
@@ -223,16 +219,13 @@ function Chart (props) {
             var quantile25 = d3.quantile(allCyclesMeta, 0.25, (d) => d.adjEndCycleValue);
             var quantile50 = d3.quantile(allCyclesMeta, 0.50, (d) => d.adjEndCycleValue);
             var quantile75 = d3.quantile(allCyclesMeta, 0.75, (d) => d.adjEndCycleValue);
-            var quantile90 = d3.quantile(allCyclesMeta, 0.90, (d) => d.adjEndCycleValue);
 
-            var allReturns = getAllReturns(allCycles);
-            var medianReturns = d3.median(allReturns, (d) => d.aggReturn);
-            var avgReturns = d3.mean(allReturns, (d) => d.aggReturn);
-            var extReturns = d3.extent(allReturns, (d) => d.aggReturn);
+            var allReturns = calcAllReturns(allCycles);
+            var medianReturns = d3.median(allReturns);
+            var extReturns = d3.extent(allReturns);
 
             // TODO CAGR instead of arithmetic mean
             var cagrList = calcNetGrowth(allCyclesMeta);
-            var avgCAGR = d3.mean(cagrList);
             var medianCAGR = d3.median(cagrList);
             var extCAGR = d3.extent(cagrList);
     
@@ -256,7 +249,6 @@ function Chart (props) {
                 }
             }
     
-            setAvgAdjEndValueState(avgAdjEnd);
             setMaxAdjEndValueState(extAdjEnd[1]);
             setMinAdjEndValueState(extAdjEnd[0]);
 
@@ -264,14 +256,11 @@ function Chart (props) {
             setQuantile25AdjEndValueState(quantile25);
             setQuantile50AdjEndValueState(quantile50);
             setQuantile75AdjEndValueState(quantile75);
-            setQuantile90AdjEndValueState(quantile90);
     
-            setAvgReturnsState(avgReturns);
             setMedianReturnsState(medianReturns);
             setMinReturnsState(extReturns[0]);
             setMaxReturnsState(extReturns[1]);
 
-            setAvgCAGRState(avgCAGR);
             setMedianCAGRState(medianCAGR);
             setMinCAGRState(extCAGR[0]);
             setMaxCAGRState(extCAGR[1]);
@@ -453,22 +442,20 @@ function Chart (props) {
     return (
         <div>
             <SummaryCards 
+             lifetime={props.lifeexpectancy - props.currentage + 1}
              fails={numFailsState} cycles={props.numcycles}
              numgreaterthanstart={numGreaterThanStartState}
              minfailage={minFailAgeState} 
-             avgendvalue={avgAdjEndValueState}
              quantile10endvalue={quantile10EndValueState}
              quantile25endvalue={quantile25EndValueState}
              quantile50endvalue={quantile50EndValueState}
              quantile75endvalue={quantile75EndValueState}
-             quantile90endvalue={quantile90EndValueState}
              maxendvalue={maxAdjEndValueState}
              minendvalue={minAdjEndValueState}
              mediancagr={medianCAGRState}
-             avgcagr={avgCAGRState}
              mincagr={minCAGRState}
              maxcagr={maxCAGRState}
-             medianreturns={medianReturnsState} avgreturns={avgReturnsState}
+             medianreturns={medianReturnsState}
              minreturns={minReturnsState} maxreturns={maxReturnsState}
              netpositivepct={pctPositiveNetState}
              />

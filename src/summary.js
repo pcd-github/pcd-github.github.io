@@ -23,6 +23,9 @@ function SummaryCards (props) {
                             {makePct(1 - (props.fails / props.cycles))} success ({props.cycles - props.fails} / {props.cycles} )
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
+                            {props.lifetime} years of life 
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
                             Minimum failure age : {(Number.POSITIVE_INFINITY === props.minfailage) ? 'n/a' : props.minfailage}
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
@@ -45,9 +48,6 @@ function SummaryCards (props) {
                             range: ({ makeCurrency(props.minendvalue) }, { makeCurrency(props.maxendvalue) })
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            90% : {makeCurrency(props.quantile90endvalue)} 
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
                             75% : {makeCurrency(props.quantile75endvalue)} 
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
@@ -61,7 +61,7 @@ function SummaryCards (props) {
                 <Card>
                     <CardContent>
                         <Typography variant="h6" component="h6">
-                            growth and returns (%)
+                            total return and net growth (%)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             median return: { makePct(props.medianreturns) } 
@@ -70,10 +70,10 @@ function SummaryCards (props) {
                             range of returns: ({ makePct(props.minreturns) }, { makePct(props.maxreturns) })
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            median net CAGR: { makePct(props.mediancagr) } 
+                            median net cycle growth: { makePct(props.mediancagr) } 
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            cycle net CAGR range: ({ makePct(props.mincagr) }, { makePct(props.maxcagr) })
+                            net cycle growth range: ({ makePct(props.mincagr) }, { makePct(props.maxcagr) })
                         </Typography>
                     </CardContent>
                 </Card>  
