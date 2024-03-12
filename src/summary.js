@@ -42,17 +42,7 @@ function SummaryCards (props) {
                             median: {makeCurrency(props.quantile50endvalue)} 
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            average: {makeCurrency(props.avgendvalue)} 
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
                             range: ({ makeCurrency(props.minendvalue) }, { makeCurrency(props.maxendvalue) })
-                        </Typography>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent>
-                        <Typography variant="h6" component="h6">
-                            end value %-tiles ($)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             90% : {makeCurrency(props.quantile90endvalue)} 
@@ -65,22 +55,25 @@ function SummaryCards (props) {
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             10% : {makeCurrency(props.quantile10endvalue)} 
-                        </Typography>
+                        </Typography>                        
                     </CardContent>
                 </Card>
                 <Card>
                     <CardContent>
                         <Typography variant="h6" component="h6">
-                            returns (%)
+                            growth and returns (%)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            median: { makePct(props.medianreturns) } 
+                            median return: { makePct(props.medianreturns) } 
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            average: { makePct(props.avgreturns) } 
+                            range of returns: ({ makePct(props.minreturns) }, { makePct(props.maxreturns) })
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            range: ({ makePct(props.minreturns) }, { makePct(props.maxreturns) })
+                            median net CAGR: { makePct(props.mediancagr) } 
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            cycle net CAGR range: ({ makePct(props.mincagr) }, { makePct(props.maxcagr) })
                         </Typography>
                     </CardContent>
                 </Card>  

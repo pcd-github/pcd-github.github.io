@@ -19,6 +19,11 @@ function Chart (props) {
     const [quantile75EndValueState, setQuantile75AdjEndValueState] = useState(0);
     const [quantile90EndValueState, setQuantile90AdjEndValueState] = useState(0);
 
+    const [avgCAGRState, setAvgCAGRState] = useState(0);
+    const [medianCAGRState, setMedianCAGRState] = useState(0);
+    const [minCAGRState, setMinCAGRState] = useState(0);
+    const [maxCAGRState, setMaxCAGRState] = useState(0);
+
     const [avgReturnsState, setAvgReturnsState] = useState(0);
     const [medianReturnsState, setMedianReturnsState] = useState(0);
     const [minReturnsState, setMinReturnsState] = useState(0);
@@ -167,6 +172,19 @@ function Chart (props) {
         return retVal;
     }
 
+    const calcNetGrowth = (allCyclesMeta) => {
+        var retVal = [];
+
+        for (var i = 0; i < allCyclesMeta.length; i++) {
+            var nRoot = allCyclesMeta[i].cycleData.length;
+            var oneVal = allCyclesMeta[i].adjEndCycleValue / allCyclesMeta[i].startCycleValue;
+            oneVal = Math.pow(oneVal, 1/nRoot) - 1;
+            retVal.push(oneVal);
+        }
+
+        return retVal;
+    }
+
     const getNetDeltas = (allCycleData) => {
         var retVal = [];
 
@@ -208,9 +226,15 @@ function Chart (props) {
             var quantile90 = d3.quantile(allCyclesMeta, 0.90, (d) => d.adjEndCycleValue);
 
             var allReturns = getAllReturns(allCycles);
-            var avgReturns = d3.mean(allReturns, (d) => d.aggReturn);
             var medianReturns = d3.median(allReturns, (d) => d.aggReturn);
+            var avgReturns = d3.mean(allReturns, (d) => d.aggReturn);
             var extReturns = d3.extent(allReturns, (d) => d.aggReturn);
+
+            // TODO CAGR instead of arithmetic mean
+            var cagrList = calcNetGrowth(allCyclesMeta);
+            var avgCAGR = d3.mean(cagrList);
+            var medianCAGR = d3.median(cagrList);
+            var extCAGR = d3.extent(cagrList);
     
             var netDeltas = getNetDeltas(allCycles);
             var pctPositiveNet = getPctPositiveNet(netDeltas);
@@ -246,6 +270,11 @@ function Chart (props) {
             setMedianReturnsState(medianReturns);
             setMinReturnsState(extReturns[0]);
             setMaxReturnsState(extReturns[1]);
+
+            setAvgCAGRState(avgCAGR);
+            setMedianCAGRState(medianCAGR);
+            setMinCAGRState(extCAGR[0]);
+            setMaxCAGRState(extCAGR[1]);
 
             setPctPositiveNetState(pctPositiveNet);
             setNumFailsState(numFails);
@@ -435,6 +464,10 @@ function Chart (props) {
              quantile90endvalue={quantile90EndValueState}
              maxendvalue={maxAdjEndValueState}
              minendvalue={minAdjEndValueState}
+             mediancagr={medianCAGRState}
+             avgcagr={avgCAGRState}
+             mincagr={minCAGRState}
+             maxcagr={maxCAGRState}
              medianreturns={medianReturnsState} avgreturns={avgReturnsState}
              minreturns={minReturnsState} maxreturns={maxReturnsState}
              netpositivepct={pctPositiveNetState}
