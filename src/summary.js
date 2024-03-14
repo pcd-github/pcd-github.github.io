@@ -64,16 +64,16 @@ function SummaryCards (props) {
                             total return and net growth (%)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            median return: { makePct(props.medianreturns) } 
+                            median total return: { makePct(props.medianreturns) } 
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            range of returns: ({ makePct(props.minreturns) }, { makePct(props.maxreturns) })
+                            range of total returns: ({ makePct(props.minreturns) }, { makePct(props.maxreturns) })
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            median net cycle growth: { makePct(props.mediancagr) } 
+                            median net growth: { makePct(props.mediannetgrowth) } 
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            net cycle growth range: ({ makePct(props.mincagr) }, { makePct(props.maxcagr) })
+                            net growth range: ({ makePct(props.minnetgrowth) }, { makePct(props.maxnetgrowth) })
                         </Typography>
                     </CardContent>
                 </Card>  

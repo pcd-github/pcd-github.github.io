@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import SummaryCards from "./summary.js";
 import EndValueChart from './endvaluechart.js';
 import "./chartdata.css";
-import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency, dumpCycleToCSVFile} from './common.js';
+import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency, makePct,dumpCycleToCSVFile} from './common.js';
 
 function Chart (props) {
   
@@ -17,9 +17,9 @@ function Chart (props) {
     const [quantile50EndValueState, setQuantile50AdjEndValueState] = useState(0);
     const [quantile75EndValueState, setQuantile75AdjEndValueState] = useState(0);
 
-    const [medianCAGRState, setMedianCAGRState] = useState(0);
-    const [minCAGRState, setMinCAGRState] = useState(0);
-    const [maxCAGRState, setMaxCAGRState] = useState(0);
+    const [medianNetGrowthState, setMedianNetGrowthState] = useState(0);
+    const [minNetGrowthState, setMinNetGrowthState] = useState(0);
+    const [maxNetGrowthState, setMaxNetGrowthState] = useState(0);
 
     const [medianReturnsState, setMedianReturnsState] = useState(0);
     const [minReturnsState, setMinReturnsState] = useState(0);
@@ -153,16 +153,23 @@ function Chart (props) {
 
     const calcAllReturns = (allCycleData) => {
         var retVal = [];
+
+        // the data set of total return % across all cycles
         for (var iCycle = 0; iCycle < allCycleData.length; iCycle++) {
+            
+            var cycleReturn = 1;
+
             for (var year = 0; year < allCycleData[iCycle].length; year++) {
                 // deduct the withdrawal amount from the start value
                 // divide end over start for appreciation value
                 var oneYearData = allCycleData[iCycle][year];
 
                 var oneYearAppr = (oneYearData.endValue / 
-                                    (oneYearData.beginValue - oneYearData.actualSpend)) - 1;
-                retVal.push(oneYearAppr);
+                                    (oneYearData.beginValue - oneYearData.actualSpend));
+                cycleReturn *= oneYearAppr;
             }
+            cycleReturn = Math.pow(cycleReturn, (1 / allCycleData[iCycle].length)) - 1;
+            retVal.push(cycleReturn);
         }
 
         return retVal;
@@ -225,9 +232,9 @@ function Chart (props) {
             var extReturns = d3.extent(allReturns);
 
             // TODO CAGR instead of arithmetic mean
-            var cagrList = calcNetGrowth(allCyclesMeta);
-            var medianCAGR = d3.median(cagrList);
-            var extCAGR = d3.extent(cagrList);
+            var netGrowthList = calcNetGrowth(allCyclesMeta);
+            var medianNetGrowth = d3.median(netGrowthList);
+            var extNetGrowth = d3.extent(netGrowthList);
     
             var netDeltas = getNetDeltas(allCycles);
             var pctPositiveNet = getPctPositiveNet(netDeltas);
@@ -261,9 +268,9 @@ function Chart (props) {
             setMinReturnsState(extReturns[0]);
             setMaxReturnsState(extReturns[1]);
 
-            setMedianCAGRState(medianCAGR);
-            setMinCAGRState(extCAGR[0]);
-            setMaxCAGRState(extCAGR[1]);
+            setMedianNetGrowthState(medianNetGrowth);
+            setMinNetGrowthState(extNetGrowth[0]);
+            setMaxNetGrowthState(extNetGrowth[1]);
 
             setPctPositiveNetState(pctPositiveNet);
             setNumFailsState(numFails);
@@ -452,9 +459,9 @@ function Chart (props) {
              quantile75endvalue={quantile75EndValueState}
              maxendvalue={maxAdjEndValueState}
              minendvalue={minAdjEndValueState}
-             mediancagr={medianCAGRState}
-             mincagr={minCAGRState}
-             maxcagr={maxCAGRState}
+             mediannetgrowth={medianNetGrowthState}
+             minnetgrowth={minNetGrowthState}
+             maxnetgrowth={maxNetGrowthState}
              medianreturns={medianReturnsState}
              minreturns={minReturnsState} maxreturns={maxReturnsState}
              netpositivepct={pctPositiveNetState}
