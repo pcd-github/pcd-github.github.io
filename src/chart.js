@@ -158,31 +158,24 @@ function Chart (props) {
         for (var iCycle = 0; iCycle < allCycleData.length; iCycle++) {
             
             var cycleReturn = 1;
+            var cycleGrowth = 1;
 
             for (var year = 0; year < allCycleData[iCycle].length; year++) {
-                // deduct the withdrawal amount from the start value
-                // divide end over start for appreciation value
                 var oneYearData = allCycleData[iCycle][year];
-
                 var oneYearAppr = (oneYearData.endValue / 
                                     (oneYearData.beginValue - oneYearData.actualSpend));
+                var oneYearGrowth = (oneYearData.endValue / oneYearData.beginValue);
                 cycleReturn *= oneYearAppr;
+                cycleGrowth *= oneYearGrowth;
             }
-            cycleReturn = Math.pow(cycleReturn, (1 / allCycleData[iCycle].length)) - 1;
-            retVal.push(cycleReturn);
-        }
 
-        return retVal;
-    }
+            const oneYear = {
+                'cycleReturn' : Math.pow(cycleReturn, (1 / allCycleData[iCycle].length)) - 1,
+                'cycleGrowth' : Math.pow(cycleGrowth, (1 / allCycleData[iCycle].length)) - 1,
+            }
 
-    const calcNetGrowth = (allCyclesMeta) => {
-        var retVal = [];
-
-        for (var i = 0; i < allCyclesMeta.length; i++) {
-            var nRoot = allCyclesMeta[i].cycleData.length;
-            var oneVal = allCyclesMeta[i].adjEndCycleValue / allCyclesMeta[i].startCycleValue;
-            oneVal = Math.pow(oneVal, 1/nRoot) - 1;
-            retVal.push(oneVal);
+            // console.log('cycle ' + iCycle + ' return: ' + makePct(cycleReturn) + ' growth: ' + makePct(cycleGrowth) + ' delta: ' + makePct(cycleReturn - cycleGrowth));
+            retVal.push(oneYear);
         }
 
         return retVal;
@@ -220,7 +213,6 @@ function Chart (props) {
             const allCyclesMeta = props.cyclemeta;
     
             var extAdjEnd = d3.extent(allCyclesMeta, (d) => d.adjEndCycleValue);
-            var avgAdjEnd = d3.mean(allCyclesMeta, (d) => d.adjEndCycleValue);
 
             var quantile10 = d3.quantile(allCyclesMeta, 0.10, (d) => d.adjEndCycleValue);
             var quantile25 = d3.quantile(allCyclesMeta, 0.25, (d) => d.adjEndCycleValue);
@@ -228,14 +220,10 @@ function Chart (props) {
             var quantile75 = d3.quantile(allCyclesMeta, 0.75, (d) => d.adjEndCycleValue);
 
             var allReturns = calcAllReturns(allCycles);
-            var medianReturns = d3.median(allReturns);
-            var extReturns = d3.extent(allReturns);
-
-            // TODO CAGR instead of arithmetic mean
-            var netGrowthList = calcNetGrowth(allCyclesMeta);
-            var medianNetGrowth = d3.median(netGrowthList);
-            var extNetGrowth = d3.extent(netGrowthList);
-    
+            var medianReturns = d3.median(allReturns, (d) => d.cycleReturn);
+            var extReturns = d3.extent(allReturns, (d) => d.cycleReturn);
+            var medianNetGrowth = d3.median(allReturns, (d) => d.cycleGrowth);
+            var extNetGrowth = d3.extent(allReturns, (d) => d.cycleGrowth);
             var netDeltas = getNetDeltas(allCycles);
             var pctPositiveNet = getPctPositiveNet(netDeltas);
     

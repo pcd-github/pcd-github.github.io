@@ -61,19 +61,22 @@ function SummaryCards (props) {
                 <Card>
                     <CardContent>
                         <Typography variant="h6" component="h6">
-                            total return and net growth (%)
+                            annualized total return (%)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            median total return: { makePct(props.medianreturns) } 
+                            median: { makePct(props.medianreturns) } 
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            range of total returns: ({ makePct(props.minreturns) }, { makePct(props.maxreturns) })
+                            range: ({ makePct(props.minreturns) }, { makePct(props.maxreturns) })
+                        </Typography>
+                        <Typography variant="h6" component="h6">
+                            annualized net growth (%)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            median net growth: { makePct(props.mediannetgrowth) } 
+                            median: { makePct(props.mediannetgrowth) } 
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            net growth range: ({ makePct(props.minnetgrowth) }, { makePct(props.maxnetgrowth) })
+                            range: ({ makePct(props.minnetgrowth) }, { makePct(props.maxnetgrowth) })
                         </Typography>
                     </CardContent>
                 </Card>  
