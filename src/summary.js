@@ -23,16 +23,16 @@ function SummaryCards (props) {
                             {makePct(1 - (props.fails / props.cycles))} success ({props.cycles - props.fails} / {props.cycles} )
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            {props.lifetime} years of life 
+                            Life expectancy : {props.lifetime} years
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             Minimum failure age : {(Number.POSITIVE_INFINITY === props.minfailage) ? 'n/a' : props.minfailage}
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            {makePct(props.numgreaterthanstart / props.cycles)} cycles end above start
+                            {makePct(props.numgreaterthanstart / props.cycles)} positive cycles
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            { makePct(props.netpositivepct)} years net positive
+                            { makePct(props.netpositivepct)} positive years
                         </Typography>
                     </CardContent>
                 </Card>
@@ -60,23 +60,20 @@ function SummaryCards (props) {
                 </Card>
                 <Card>
                     <CardContent>
-                        <Typography variant="h6" component="h6">
+                        <Typography variant="subtitle1" component="subtitle1">
                             annualized total return (%)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            median: { makePct(props.medianreturns) } 
+                            median: { makePct(props.medianreturns) } | range: ({ makePct(props.minreturns) }, { makePct(props.maxreturns) })
                         </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            range: ({ makePct(props.minreturns) }, { makePct(props.maxreturns) })
-                        </Typography>
-                        <Typography variant="h6" component="h6">
+                        <Typography variant="subtitle1" component="subtitle1">
                             annualized net growth (%)
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            median: { makePct(props.mediannetgrowth) } 
+                            median: { makePct(props.mediannetgrowth) } | range: ({ makePct(props.minnetgrowth) }, { makePct(props.maxnetgrowth) })
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            range: ({ makePct(props.minnetgrowth) }, { makePct(props.maxnetgrowth) })
+                            
                         </Typography>
                     </CardContent>
                 </Card>  

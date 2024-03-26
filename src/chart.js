@@ -162,10 +162,10 @@ function Chart (props) {
 
             for (var year = 0; year < allCycleData[iCycle].length; year++) {
                 var oneYearData = allCycleData[iCycle][year];
-                var oneYearAppr = (oneYearData.endValue / 
+                var oneYearReturn = (oneYearData.endValue / 
                                     (oneYearData.beginValue - oneYearData.actualSpend));
                 var oneYearGrowth = (oneYearData.endValue / oneYearData.beginValue);
-                cycleReturn *= oneYearAppr;
+                cycleReturn *= oneYearReturn;
                 cycleGrowth *= oneYearGrowth;
             }
 
