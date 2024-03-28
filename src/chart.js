@@ -426,6 +426,9 @@ function Chart (props) {
         props.numcycles, 
         props.currentage,
         props.lifeexpectancy, 
+        props.allocAvgReturn,
+        props.allocStdDeviationReturn,
+        props.harvestRatio,
         props.minzoom,
         props.maxzoom,
         props.zoomcolor,
@@ -453,6 +456,9 @@ function Chart (props) {
              medianreturns={medianReturnsState}
              minreturns={minReturnsState} maxreturns={maxReturnsState}
              netpositivepct={pctPositiveNetState}
+             allocavgreturn={props.allocavgreturn}
+             allocstddeviationreturn={props.allocstddeviationreturn}
+             allocharvestratio={props.allocharvestratio}
              />
             <svg id={svgCycleChartID} 
                     width={totalWidth}

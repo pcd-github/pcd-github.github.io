@@ -32,8 +32,6 @@ export const generateSourceData = (mcProjection, thisLifetime, startDataYear, en
     var cycleCount = getNumberOfCycles(mcProjection, thisLifetime, startDataYear, endDataYear);
     var startOffset = startDataYear - histData[0].year;
 
-
-    // TODO - factor in start/end data range.
     for (var i = 0; i < cycleCount; i++) {
         for (var j = 0; j < thisLifetime; j++) {
             var histIndex = (mcProjection) 
@@ -45,6 +43,16 @@ export const generateSourceData = (mcProjection, thisLifetime, startDataYear, en
 
     return calcSourceData;
 }    
+
+export const generatePortfolioTestData = () => {
+    const testData = [];
+
+    for (var i = 0; i < histData.length; i++) {
+        testData[i] = i;
+    }
+
+    return testData;
+}
 
 export const checkDistribution = (indeces) => {
     var countArray = [];

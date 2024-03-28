@@ -12,8 +12,8 @@ import Button from '@mui/material/Button';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Select from '@mui/material/Select';
 
-import { histData, generateSourceData } from "./histdata.js";
-import { getColorStringForRelativeValue, dumpAllToCSVFile, dumpBinToCSVFile, makeCurrency } from './common.js';
+import { histData, generateSourceData, generatePortfolioTestData } from "./histdata.js";
+import { getColorStringForRelativeValue, dumpAllToCSVFile, dumpBinToCSVFile, makeCurrency, makePct } from './common.js';
 import Chart from './chart.js';
 
 const defaultPortfolioValue = 1250000;
@@ -215,7 +215,16 @@ class SWRCalc extends React.Component {
             return retValue;
         }
 
-        const applySpend = (thisCycle) => {
+        const calcAnnualInflationRate = (sourceIndex) => {
+            var prevYearIndex = Math.max(0, sourceIndex - 1);
+            var inflRate = ( (histData[sourceIndex].cpi) / 
+                             (histData[prevYearIndex].cpi)
+                           ) - 1;
+
+            return inflRate;
+        }
+
+        const applySpend = (thisCycle, sourceDataIndex) => {
             const ssAge = this.state.socialSecurityAgeState;
             const ssIncome = (0 !== this.state.socialSecurityAgeState) ? this.state.socialSecurityIncomeState : 0;
 
@@ -228,6 +237,9 @@ class SWRCalc extends React.Component {
             thisCycle.actualSpend -= adjustment;
             // subtract spend from start value
             thisCycle.endValue = thisCycle.beginValue - thisCycle.actualSpend;
+            // calculate % spend and % inflation
+            thisCycle.pctActualSpend = thisCycle.actualSpend / thisCycle.beginValue;
+            thisCycle.pctInflation = calcAnnualInflationRate(sourceDataIndex);
         }
 
         const applyAppreciation = (thisCycle, cycleNum, sourceData) => {
@@ -278,7 +290,8 @@ class SWRCalc extends React.Component {
         const calcAdjustedEndValue = (thisCycle) => {
             thisCycle.adjEndValue = thisCycle.endValue / thisCycle.cumulativeCPI;
         }
- /*
+ 
+/*
         const dumpYear = (oneYear) => {
             console.log(oneYear.age + 
                         ' y:' + oneYear.year +
@@ -293,7 +306,6 @@ class SWRCalc extends React.Component {
                         ' delta:' + makeCurrency(oneYear.netDelta)
                        );
         }
-
         const dumpCycle = (cycleData) => {
             for (var i = 0; i < cycleData.length; i++) {
                 dumpYear(cycleData[i]);
@@ -315,13 +327,62 @@ class SWRCalc extends React.Component {
             // a 2% difference in this method vs. this / start ratio, so I've left 
             // that one in for the purposes of historical precision.
             else {
-                // calculate annual change - currCPI / prevCPI
-                var prevYearIndex = (0 < sourceDataIndex) ? (sourceDataIndex - 1) : sourceDataIndex;
-                var annualChange = (histData[sourceDataIndex].cpi / histData[prevYearIndex].cpi) - 1;
-                retVal = prevCCPI + annualChange;
+                retVal = prevCCPI + calcAnnualInflationRate(sourceDataIndex);
             }
 
             return retVal;
+        }
+
+        const createYearObject = () => {
+            var oneYear = { "year": 0,
+                            "age": 0,
+                            "beginValue": 0,
+                            "beginEquityValue": 0,
+                            "endEquityValue" : 0,
+                            "beginBondValue" : 0,
+                            "endBondValue" : 0,
+                            "equityReturn": 0,
+                            "cumulativeCPI": 1,
+                            "spend": 0,
+                            "endValue": 0,
+                            "pctInflation": 0,
+                            // not updated when a failure is detected
+                            "equityAppr": 0,
+                            "divAppr": 0,
+                            "bondReturn": 0,
+                            "bondAppr": 0,
+                            "aggReturn": 0,
+                            "actualSpend": 0,
+                            "pctActualSpend": 0,
+                            "fees": 0,
+                            "netDelta": 0,
+                            "adjEndValue": 0,
+                            "appr": 0,
+                            "adjAppr": 0,
+          };
+          return oneYear;
+        }
+
+        const processOneYear = (thisYear, sourceDataIndex, sourceData) => {
+            // precondition - these are set
+            // year, age, beginValue, cumulative CPI, equityReturn
+            var thisIndex = sourceData[sourceDataIndex];
+            // get spend adjusted for inflation and ss benefits
+            applySpend(thisYear, thisIndex);
+
+            // detect failure (out of funds), and terminate cycle.
+            if (0 < thisYear.endValue) {
+                applyAppreciation(thisYear, sourceDataIndex, sourceData);
+                applyFees(thisYear);
+    
+                // net delta is for informational purposes used later
+                calcNetDelta (thisYear);
+                calcAdjustedEndValue(thisYear);
+
+            }
+            else {
+                thisYear.endValue = thisYear.adjEndValue = 0;
+            }
         }
 
         const runCycle = (startIndex, numYears, sourceData) => {
@@ -330,53 +391,29 @@ class SWRCalc extends React.Component {
             // historically and monte-carlo sequences.
             const startCPI = histData[sourceData[startIndex]].cpi;
             var prevYearCCPI = 1;
+
+            // console.log(histData[sourceData[startIndex]].year + '-' + histData[sourceData[startIndex + numYears - 1]].year)
     
             for(var i = 0; i < numYears; i++){
                 var thisIndex = sourceData[startIndex + i];
                 var thisYearSource = histData[thisIndex];
-                var obj = { "year": thisYearSource.year,
-                            "age": this.state.currentAgeState + i,
-                            "beginValue": (i > 0) ? cycleData[i - 1].endValue : this.state.portfolioValueState,
-                            "beginEquityValue": 0,
-                            "endEquityValue" : 0,
-                            "beginBondValue" : 0,
-                            "endBondValue" : 0,
-                            "equityReturn": thisYearSource.equity,
-                            "cumulativeCPI": (0 === i) ? 1 : calcCumulativeCPI(startCPI, thisYearSource.cpi, thisIndex, prevYearCCPI),
-                            "spend": 0,
-                            "endValue": 0,
-                            // the rest of these fields are not updated when a failure is detected
-                            "equityAppr": 0,
-                            "divAppr": 0,
-                            "bondReturn": 0,
-                            "bondAppr": 0,
-                            "aggReturn": 0,
-                            "actualSpend": 0,
-                            "fees": 0,
-                            "netDelta": 0,
-                            "adjEndValue": 0,
-                            "appr": 0,
-                            "adjAppr": 0,
-                          };
-                prevYearCCPI = obj.cumulativeCPI;
-                // get spend adjusted for inflation and ss benefits
-                applySpend(obj);
+                var oneYear = createYearObject();
+
+                oneYear.year = thisYearSource.year;
+                oneYear.age = this.state.currentAgeState + i;
+                oneYear.beginValue = (i > 0) ? cycleData[i - 1].endValue : this.state.portfolioValueState;
+                oneYear.equityReturn = thisYearSource.equity;
+                oneYear.cumulativeCPI = (0 === i) ? 1 : calcCumulativeCPI(startCPI, thisYearSource.cpi, thisIndex, prevYearCCPI);
+
+                processOneYear(oneYear, startIndex + i, sourceData);
+
+                prevYearCCPI = oneYear.cumulativeCPI;
+                cycleData.push(oneYear);
 
                 // detect failure (out of funds), and terminate cycle.
-                if (0 >= obj.endValue) {
-                    obj.endValue = obj.adjEndValue = 0;
-                    cycleData.push(obj);
+                if (0 >= oneYear.endValue) {
                     break;
                 }
-
-                applyAppreciation(obj, startIndex + i, sourceData);
-                applyFees(obj);
-
-                // net delta is for informational purposes used later
-                calcNetDelta (obj);
-                calcAdjustedEndValue(obj);
-
-                cycleData.push(obj);
             }
             return cycleData;
         }
@@ -468,7 +505,64 @@ class SWRCalc extends React.Component {
             allCyclesMeta = newAllCyclesMeta;
         }
 
+        const setCycleMetrics = (oneCycleData) => {
+            var avgReturn = d3.mean(oneCycleData, (d) => d.aggReturn);
+            var stdDeviationReturn = d3.deviation(oneCycleData, (d) => d.aggReturn);
+            var avgInflation = d3.mean(oneCycleData, (d) => d.pctInflation);
+            var avgPctSpend = d3.mean(oneCycleData, (d) => d.pctActualSpend);
+            var harvestRatio = (avgReturn - (avgInflation + avgPctSpend)) / stdDeviationReturn;
+
+        }
+
+        const testPortfolio = () => {
+            const testData = generatePortfolioTestData();
+            var testResults = [];
+
+            // run through the historical data with a constant start value each year
+            // capture appreciation and inflation data
+            for (var i = 0; i < testData.length; i++) {
+                var thisIndex = testData[i];
+                var thisYearSource = histData[thisIndex];
+                var oneYear = createYearObject();
+
+                oneYear.year = thisYearSource.year;
+                oneYear.age = this.state.currentAgeState + i;
+                oneYear.beginValue = this.state.portfolioValueState;
+                oneYear.equityReturn = thisYearSource.equity;
+                oneYear.cumulativeCPI = 1;
+                processOneYear(oneYear, i, testData);
+
+                // save it all
+                testResults.push(oneYear);
+
+                // detect failure (out of funds), and terminate cycle
+                // this can happen when entering new data 
+                // partial portfolio or spend data can look wonky
+                // ... and so will the portfolio results
+                if (0 >= oneYear.endValue) {
+                    break;
+                }
+            }
+
+            var avgReturn = d3.mean(testResults, (d) => d.aggReturn);
+            var stdDeviationReturn = d3.deviation(testResults, (d) => d.aggReturn);
+            var avgInflation = d3.mean(testResults, (d) => d.pctInflation);
+            var avgPctSpend = d3.mean(testResults, (d) => d.pctActualSpend);
+            var harvestRatio = (avgReturn - (avgInflation + avgPctSpend)) / stdDeviationReturn;
+            var allocMetrics = {
+                'avgReturn': avgReturn,
+                'stdDeviationReturn': stdDeviationReturn,
+                'avgInflation': avgInflation,
+                'avgPctSpend': avgPctSpend,
+                'harvestRatio': harvestRatio,
+            }
+
+            return allocMetrics;
+        }
+
         if (null != this.sourceData) {
+            var testResults = testPortfolio ();
+
             calcCycles(this.sourceData);
             cullOutliers ();
         }
@@ -617,6 +711,9 @@ class SWRCalc extends React.Component {
                        numcycles={ allCycles.length  }
                        currentage={this.state.currentAgeState}
                        lifeexpectancy={this.state.lifeExpectancyState}
+                       allocavgreturn={testResults.avgReturn}
+                       allocstddeviationreturn={testResults.stdDeviationReturn}
+                       allocharvestratio={testResults.harvestRatio}
                        minzoom={this.state.minZoomValueState}
                        maxzoom={this.state.maxZoomValueState}
                        zoomcolor={this.state.zoomColorState}

@@ -39,7 +39,7 @@ function SummaryCards (props) {
                 <Card>
                     <CardContent>
                         <Typography variant="h6" component="h6">
-                            end value ($)
+                            end value
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             median: {makeCurrency(props.quantile50endvalue)} 
@@ -60,22 +60,26 @@ function SummaryCards (props) {
                 </Card>
                 <Card>
                     <CardContent>
-                        <Typography variant="subtitle1" component="subtitle1">
-                            annualized total return (%)
+                        <Typography variant="subtitle1" >
+                            annualized return
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             median: { makePct(props.medianreturns) } | range: ({ makePct(props.minreturns) }, { makePct(props.maxreturns) })
                         </Typography>
-                        <Typography variant="subtitle1" component="subtitle1">
-                            annualized net growth (%)
+                        <Typography variant="subtitle1" >
+                            net annualized growth
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             median: { makePct(props.mediannetgrowth) } | range: ({ makePct(props.minnetgrowth) }, { makePct(props.maxnetgrowth) })
                         </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            
+                        <Typography variant="subtitle1" >
+                            asset allocation metrics
                         </Typography>
-                    </CardContent>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            avg return: { makePct(props.allocavgreturn) } |
+                            std dev : { makePct(props.allocstddeviationreturn) } | harvest ratio {Number(props.allocharvestratio).toFixed(2)}
+                        </Typography>
+                        </CardContent>
                 </Card>  
             </Stack>             
         </div>
