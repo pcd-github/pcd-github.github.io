@@ -238,6 +238,7 @@ class SWRCalc extends React.Component {
             // subtract spend from start value
             thisCycle.endValue = thisCycle.beginValue - thisCycle.actualSpend;
             // calculate % spend and % inflation
+            thisCycle.pctSpend = thisCycle.spend / thisCycle.beginValue;
             thisCycle.pctActualSpend = thisCycle.actualSpend / thisCycle.beginValue;
             thisCycle.pctInflation = calcAnnualInflationRate(sourceDataIndex);
         }
@@ -353,6 +354,7 @@ class SWRCalc extends React.Component {
                             "bondAppr": 0,
                             "aggReturn": 0,
                             "actualSpend": 0,
+                            "pctSpend": 0,
                             "pctActualSpend": 0,
                             "fees": 0,
                             "netDelta": 0,
@@ -505,15 +507,6 @@ class SWRCalc extends React.Component {
             allCyclesMeta = newAllCyclesMeta;
         }
 
-        const setCycleMetrics = (oneCycleData) => {
-            var avgReturn = d3.mean(oneCycleData, (d) => d.aggReturn);
-            var stdDeviationReturn = d3.deviation(oneCycleData, (d) => d.aggReturn);
-            var avgInflation = d3.mean(oneCycleData, (d) => d.pctInflation);
-            var avgPctSpend = d3.mean(oneCycleData, (d) => d.pctActualSpend);
-            var harvestRatio = (avgReturn - (avgInflation + avgPctSpend)) / stdDeviationReturn;
-
-        }
-
         const testPortfolio = () => {
             const testData = generatePortfolioTestData();
             var testResults = [];
@@ -547,21 +540,13 @@ class SWRCalc extends React.Component {
             var avgReturn = d3.mean(testResults, (d) => d.aggReturn);
             var stdDeviationReturn = d3.deviation(testResults, (d) => d.aggReturn);
             var avgInflation = d3.mean(testResults, (d) => d.pctInflation);
-            var avgPctSpend = d3.mean(testResults, (d) => d.pctActualSpend);
-            var harvestRatio = (avgReturn - (avgInflation + avgPctSpend)) / stdDeviationReturn;
-            var allocMetrics = {
-                'avgReturn': avgReturn,
-                'stdDeviationReturn': stdDeviationReturn,
-                'avgInflation': avgInflation,
-                'avgPctSpend': avgPctSpend,
-                'harvestRatio': harvestRatio,
-            }
+            var avgPctSpend = d3.mean(testResults, (d) => d.pctSpend);
 
-            return allocMetrics;
+            return (avgReturn - (avgInflation + avgPctSpend)) / stdDeviationReturn;
         }
 
         if (null != this.sourceData) {
-            var testResults = testPortfolio ();
+            var harvestRatio = testPortfolio ();
 
             calcCycles(this.sourceData);
             cullOutliers ();
@@ -711,9 +696,7 @@ class SWRCalc extends React.Component {
                        numcycles={ allCycles.length  }
                        currentage={this.state.currentAgeState}
                        lifeexpectancy={this.state.lifeExpectancyState}
-                       allocavgreturn={testResults.avgReturn}
-                       allocstddeviationreturn={testResults.stdDeviationReturn}
-                       allocharvestratio={testResults.harvestRatio}
+                       allocharvestratio={harvestRatio}
                        minzoom={this.state.minZoomValueState}
                        maxzoom={this.state.maxZoomValueState}
                        zoomcolor={this.state.zoomColorState}

@@ -24,6 +24,7 @@ function Chart (props) {
     const [medianReturnsState, setMedianReturnsState] = useState(0);
     const [minReturnsState, setMinReturnsState] = useState(0);
     const [maxReturnsState, setMaxReturnsState] = useState(0);
+    const [sharpeRatioState, setSharpeRatioState] = useState(0);
 
     const [pctPositiveNetState, setPctPositiveNetState] = useState(0);
     const [numGreaterThanStartState, setNumGreaterThanStartState] = useState(0);
@@ -159,23 +160,27 @@ function Chart (props) {
             
             var cycleReturn = 1;
             var cycleGrowth = 1;
+            var cycleSafeReturn = 1;
 
             for (var year = 0; year < allCycleData[iCycle].length; year++) {
                 var oneYearData = allCycleData[iCycle][year];
                 var oneYearReturn = (oneYearData.endValue / 
                                     (oneYearData.beginValue - oneYearData.actualSpend));
                 var oneYearGrowth = (oneYearData.endValue / oneYearData.beginValue);
+
                 cycleReturn *= oneYearReturn;
                 cycleGrowth *= oneYearGrowth;
+                cycleSafeReturn *= (oneYearData.bondReturn);
             }
 
-            const oneYear = {
+            const oneCycle = {
                 'cycleReturn' : Math.pow(cycleReturn, (1 / allCycleData[iCycle].length)) - 1,
                 'cycleGrowth' : Math.pow(cycleGrowth, (1 / allCycleData[iCycle].length)) - 1,
+                'cycleSafeReturn' : Math.pow(cycleSafeReturn, (1 / allCycleData[iCycle].length)) - 1,
             }
 
             // console.log('cycle ' + iCycle + ' return: ' + makePct(cycleReturn) + ' growth: ' + makePct(cycleGrowth) + ' delta: ' + makePct(cycleReturn - cycleGrowth));
-            retVal.push(oneYear);
+            retVal.push(oneCycle);
         }
 
         return retVal;
@@ -226,6 +231,11 @@ function Chart (props) {
             var extNetGrowth = d3.extent(allReturns, (d) => d.cycleGrowth);
             var netDeltas = getNetDeltas(allCycles);
             var pctPositiveNet = getPctPositiveNet(netDeltas);
+
+            var meanReturns = d3.mean(allReturns, (d) => d.cycleReturn);
+            var meanSafeReturns = d3.mean(allReturns, (d) => d.cycleSafeReturn);
+            var stdReturns = d3.deviation(allReturns, (d) => d.cycleReturn);
+            var sharpeRatio = (meanReturns - meanSafeReturns) / stdReturns;
     
             var numGreaterThanStart = 0;
             var numFails = 0;
@@ -264,6 +274,8 @@ function Chart (props) {
             setNumFailsState(numFails);
             setNumGreaterThanStartState(numGreaterThanStart);
             setMinFailAgeState(minFailAge);
+
+            setSharpeRatioState(sharpeRatio);
         }
 
         const drawAxes = (svg, xScaleIn, yScaleIn) => {
@@ -426,8 +438,6 @@ function Chart (props) {
         props.numcycles, 
         props.currentage,
         props.lifeexpectancy, 
-        props.allocAvgReturn,
-        props.allocStdDeviationReturn,
         props.harvestRatio,
         props.minzoom,
         props.maxzoom,
@@ -456,9 +466,8 @@ function Chart (props) {
              medianreturns={medianReturnsState}
              minreturns={minReturnsState} maxreturns={maxReturnsState}
              netpositivepct={pctPositiveNetState}
-             allocavgreturn={props.allocavgreturn}
-             allocstddeviationreturn={props.allocstddeviationreturn}
              allocharvestratio={props.allocharvestratio}
+             sharperatio={sharpeRatioState}
              />
             <svg id={svgCycleChartID} 
                     width={totalWidth}
