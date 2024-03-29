@@ -24,7 +24,6 @@ function Chart (props) {
     const [medianReturnsState, setMedianReturnsState] = useState(0);
     const [minReturnsState, setMinReturnsState] = useState(0);
     const [maxReturnsState, setMaxReturnsState] = useState(0);
-    const [sharpeRatioState, setSharpeRatioState] = useState(0);
 
     const [pctPositiveNetState, setPctPositiveNetState] = useState(0);
     const [numGreaterThanStartState, setNumGreaterThanStartState] = useState(0);
@@ -237,20 +236,7 @@ function Chart (props) {
             var meanReturns = d3.mean(allReturns, (d) => d.cycleReturn);
             var meanSafeReturns = d3.mean(allReturns, (d) => d.cycleSafeReturn);
             var stdReturns = d3.deviation(allReturns, (d) => d.cycleReturn);
-            var sharpeRatio = (meanReturns - meanSafeReturns) / stdReturns;
 
-            // try calculating harvesting ratio from live data
-            var meanInflation = d3.mean(allReturns, (d) => d.cycleInflation);
-            var meanActualSpend = d3.mean(allReturns, (d) => d.cycleActualSpend);
-            var harvestRatio = (meanReturns - (meanInflation + meanActualSpend)) 
-                                / stdReturns;
-            console.log('r: ' + makePct(meanReturns) +
-                        ' infl: ' + makePct(meanInflation) +
-                        ' sp: ' + makePct(meanActualSpend) + 
-                        ' sd: ' + makePct(stdReturns) +
-                        ' hr: ' + Number(harvestRatio).toFixed(4)
-                       );
-    
             var numGreaterThanStart = 0;
             var numFails = 0;
             var minFailAge = Number.POSITIVE_INFINITY;
@@ -288,8 +274,6 @@ function Chart (props) {
             setNumFailsState(numFails);
             setNumGreaterThanStartState(numGreaterThanStart);
             setMinFailAgeState(minFailAge);
-
-            setSharpeRatioState(sharpeRatio);
         }
 
         const drawAxes = (svg, xScaleIn, yScaleIn) => {
@@ -452,7 +436,8 @@ function Chart (props) {
         props.numcycles, 
         props.currentage,
         props.lifeexpectancy, 
-        props.harvestRatio,
+        props.harvestratio,
+        props.sharperatio,
         props.minzoom,
         props.maxzoom,
         props.zoomcolor,
@@ -480,8 +465,8 @@ function Chart (props) {
              medianreturns={medianReturnsState}
              minreturns={minReturnsState} maxreturns={maxReturnsState}
              netpositivepct={pctPositiveNetState}
-             allocharvestratio={props.allocharvestratio}
-             sharperatio={sharpeRatioState}
+             allocharvestratio={props.harvestratio}
+             sharperatio={props.sharperatio}
              />
             <svg id={svgCycleChartID} 
                     width={totalWidth}

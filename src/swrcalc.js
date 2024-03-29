@@ -539,14 +539,24 @@ class SWRCalc extends React.Component {
 
             var avgReturn = d3.mean(testResults, (d) => d.aggReturn);
             var stdDeviationReturn = d3.deviation(testResults, (d) => d.aggReturn);
+            var avgSafeReturn = d3.mean(testResults, (d) => d.bondReturn);
             var avgInflation = d3.mean(testResults, (d) => d.pctInflation);
             var avgPctSpend = d3.mean(testResults, (d) => d.pctSpend);
+            var portfolioMetrics = {
+                'sharpeRatio' : ((avgReturn - avgSafeReturn) / stdDeviationReturn),
+                'harvestingRatio' : (avgReturn - (avgInflation + avgPctSpend)) / stdDeviationReturn,
+            }
 
-            return (avgReturn - (avgInflation + avgPctSpend)) / stdDeviationReturn;
+            console.log('r: ' + makePct(avgReturn) + ' safe: ' + makePct(avgSafeReturn) + 
+                        ' infl: ' + makePct(avgInflation) + ' actsp: ' + makePct(avgPctSpend) +
+                        ' sharpe: ' + Number(portfolioMetrics.sharpeRatio).toFixed(4),
+                        ' harvest: ' + Number(portfolioMetrics.harvestingRatio).toFixed(4)
+            ); 
+            return portfolioMetrics;
         }
 
         if (null != this.sourceData) {
-            var harvestRatio = testPortfolio ();
+            var portfolioMetrics = testPortfolio ();
 
             calcCycles(this.sourceData);
             cullOutliers ();
@@ -696,7 +706,8 @@ class SWRCalc extends React.Component {
                        numcycles={ allCycles.length  }
                        currentage={this.state.currentAgeState}
                        lifeexpectancy={this.state.lifeExpectancyState}
-                       allocharvestratio={harvestRatio}
+                       sharperatio={portfolioMetrics.sharpeRatio}
+                       harvestratio={portfolioMetrics.harvestingRatio}
                        minzoom={this.state.minZoomValueState}
                        maxzoom={this.state.maxZoomValueState}
                        zoomcolor={this.state.zoomColorState}
