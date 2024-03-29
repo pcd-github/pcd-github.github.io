@@ -170,16 +170,18 @@ function Chart (props) {
 
                 cycleReturn *= oneYearReturn;
                 cycleGrowth *= oneYearGrowth;
-                cycleSafeReturn *= (oneYearData.bondReturn);
+                cycleSafeReturn *= (1 + oneYearData.bondReturn);
             }
 
             const oneCycle = {
                 'cycleReturn' : Math.pow(cycleReturn, (1 / allCycleData[iCycle].length)) - 1,
                 'cycleGrowth' : Math.pow(cycleGrowth, (1 / allCycleData[iCycle].length)) - 1,
                 'cycleSafeReturn' : Math.pow(cycleSafeReturn, (1 / allCycleData[iCycle].length)) - 1,
+                'cycleInflation' : d3.mean(allCycleData[iCycle], (d) => d.pctInflation),
+                'cycleActualSpend' : d3.mean(allCycleData[iCycle], (d) => d.pctActualSpend),
             }
 
-            // console.log('cycle ' + iCycle + ' return: ' + makePct(cycleReturn) + ' growth: ' + makePct(cycleGrowth) + ' delta: ' + makePct(cycleReturn - cycleGrowth));
+            // console.log('cycle ' + iCycle + ' return: ' + makePct(oneCycle.cycleReturn) + ' growth: ' + makePct(oneCycle.cycleGrowth) + '  safe return: ' + makePct(oneCycle.cycleSafeReturn));
             retVal.push(oneCycle);
         }
 
@@ -236,6 +238,18 @@ function Chart (props) {
             var meanSafeReturns = d3.mean(allReturns, (d) => d.cycleSafeReturn);
             var stdReturns = d3.deviation(allReturns, (d) => d.cycleReturn);
             var sharpeRatio = (meanReturns - meanSafeReturns) / stdReturns;
+
+            // try calculating harvesting ratio from live data
+            var meanInflation = d3.mean(allReturns, (d) => d.cycleInflation);
+            var meanActualSpend = d3.mean(allReturns, (d) => d.cycleActualSpend);
+            var harvestRatio = (meanReturns - (meanInflation + meanActualSpend)) 
+                                / stdReturns;
+            console.log('r: ' + makePct(meanReturns) +
+                        ' infl: ' + makePct(meanInflation) +
+                        ' sp: ' + makePct(meanActualSpend) + 
+                        ' sd: ' + makePct(stdReturns) +
+                        ' hr: ' + Number(harvestRatio).toFixed(4)
+                       );
     
             var numGreaterThanStart = 0;
             var numFails = 0;

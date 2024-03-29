@@ -77,7 +77,7 @@ function SummaryCards (props) {
                             range: ({ makePct(props.minreturns) }, { makePct(props.maxreturns) })
                         </Typography>
                         <Typography variant="subtitle1" >
-                            net annualized growth
+                            annualized net growth
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
                             median: { makePct(props.mediannetgrowth) } 
