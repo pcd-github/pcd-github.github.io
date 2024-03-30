@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import SummaryCards from "./summary.js";
 import EndValueChart from './endvaluechart.js';
 import "./chartdata.css";
-import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency, makePct,dumpCycleToCSVFile} from './common.js';
+import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency,dumpCycleToCSVFile} from './common.js';
 
 function Chart (props) {
   
@@ -232,10 +232,6 @@ function Chart (props) {
             var extNetGrowth = d3.extent(allReturns, (d) => d.cycleGrowth);
             var netDeltas = getNetDeltas(allCycles);
             var pctPositiveNet = getPctPositiveNet(netDeltas);
-
-            var meanReturns = d3.mean(allReturns, (d) => d.cycleReturn);
-            var meanSafeReturns = d3.mean(allReturns, (d) => d.cycleSafeReturn);
-            var stdReturns = d3.deviation(allReturns, (d) => d.cycleReturn);
 
             var numGreaterThanStart = 0;
             var numFails = 0;

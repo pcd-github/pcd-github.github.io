@@ -13,7 +13,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Select from '@mui/material/Select';
 
 import { histData, generateSourceData, generatePortfolioTestData } from "./histdata.js";
-import { getColorStringForRelativeValue, dumpAllToCSVFile, dumpBinToCSVFile, makeCurrency, makePct } from './common.js';
+import { getColorStringForRelativeValue, dumpAllToCSVFile, dumpBinToCSVFile, makeCurrency } from './common.js';
 import Chart from './chart.js';
 
 const defaultPortfolioValue = 1250000;
@@ -510,6 +510,10 @@ class SWRCalc extends React.Component {
         const testPortfolio = () => {
             const testData = generatePortfolioTestData();
             var testResults = [];
+            var totalReturnFactor = 1;
+            var safeReturnFactor = 1;
+            var spendFactor = 1; 
+            var inflationFactor = 1;
 
             // run through the historical data with a constant start value each year
             // capture appreciation and inflation data
@@ -525,6 +529,13 @@ class SWRCalc extends React.Component {
                 oneYear.cumulativeCPI = 1;
                 processOneYear(oneYear, i, testData);
 
+                // accumulate arithmetic mean factors for 
+                // return, safe return, spend, inflation
+                totalReturnFactor *= (1 + oneYear.aggReturn);
+                safeReturnFactor *= (1 + oneYear.bondReturn);
+                spendFactor *= (1 + oneYear.pctSpend); 
+                inflationFactor *= (1 + oneYear.pctInflation);
+
                 // save it all
                 testResults.push(oneYear);
 
@@ -537,21 +548,25 @@ class SWRCalc extends React.Component {
                 }
             }
 
-            var avgReturn = d3.mean(testResults, (d) => d.aggReturn);
+
+            // calc the geometric means for quantities that compound - this is more accurate
+            var meanReturn = Math.pow(totalReturnFactor, (1 / testData.length)) - 1;
+            var meanSafeReturn = Math.pow(safeReturnFactor, (1 / testData.length)) - 1;
+            var meanInflation = Math.pow(inflationFactor, (1 / testData.length)) - 1;
+            var meanPctSpend = Math.pow(spendFactor, (1 / testData.length)) - 1;
             var stdDeviationReturn = d3.deviation(testResults, (d) => d.aggReturn);
-            var avgSafeReturn = d3.mean(testResults, (d) => d.bondReturn);
-            var avgInflation = d3.mean(testResults, (d) => d.pctInflation);
-            var avgPctSpend = d3.mean(testResults, (d) => d.pctSpend);
             var portfolioMetrics = {
-                'sharpeRatio' : ((avgReturn - avgSafeReturn) / stdDeviationReturn),
-                'harvestingRatio' : (avgReturn - (avgInflation + avgPctSpend)) / stdDeviationReturn,
+                'sharpeRatio' : ((meanReturn - meanSafeReturn) / stdDeviationReturn),
+                'harvestingRatio' : (meanReturn - (meanInflation + meanPctSpend)) / stdDeviationReturn,
             }
 
-            console.log('r: ' + makePct(avgReturn) + ' safe: ' + makePct(avgSafeReturn) + 
-                        ' infl: ' + makePct(avgInflation) + ' actsp: ' + makePct(avgPctSpend) +
+            /*
+            console.log('r: ' + makePct(meanReturn) + ' safe: ' + makePct(meanSafeReturn) + 
+                        ' infl: ' + makePct(meanInflation) + ' actsp: ' + makePct(meanPctSpend) +
                         ' sharpe: ' + Number(portfolioMetrics.sharpeRatio).toFixed(4),
                         ' harvest: ' + Number(portfolioMetrics.harvestingRatio).toFixed(4)
             ); 
+             */
             return portfolioMetrics;
         }
 
