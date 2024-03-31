@@ -12,7 +12,7 @@ import Button from '@mui/material/Button';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Select from '@mui/material/Select';
 
-import { histData, generateSourceData, generatePortfolioTestData } from "./histdata.js";
+import { histData, generateSourceData } from "./histdata.js";
 import { getColorStringForRelativeValue, dumpAllToCSVFile, dumpBinToCSVFile, makeCurrency } from './common.js';
 import Chart from './chart.js';
 
@@ -507,72 +507,8 @@ class SWRCalc extends React.Component {
             allCyclesMeta = newAllCyclesMeta;
         }
 
-        const testPortfolio = () => {
-            const testData = generatePortfolioTestData();
-            var testResults = [];
-            var totalReturnFactor = 1;
-            var safeReturnFactor = 1;
-            var spendFactor = 1; 
-            var inflationFactor = 1;
-
-            // run through the historical data with a constant start value each year
-            // capture appreciation and inflation data
-            for (var i = 0; i < testData.length; i++) {
-                var thisIndex = testData[i];
-                var thisYearSource = histData[thisIndex];
-                var oneYear = createYearObject();
-
-                oneYear.year = thisYearSource.year;
-                oneYear.age = this.state.currentAgeState + i;
-                oneYear.beginValue = this.state.portfolioValueState;
-                oneYear.equityReturn = thisYearSource.equity;
-                oneYear.cumulativeCPI = 1;
-                processOneYear(oneYear, i, testData);
-
-                // accumulate arithmetic mean factors for 
-                // return, safe return, spend, inflation
-                totalReturnFactor *= (1 + oneYear.aggReturn);
-                safeReturnFactor *= (1 + oneYear.bondReturn);
-                spendFactor *= (1 + oneYear.pctSpend); 
-                inflationFactor *= (1 + oneYear.pctInflation);
-
-                // save it all
-                testResults.push(oneYear);
-
-                // detect failure (out of funds), and terminate cycle
-                // this can happen when entering new data 
-                // partial portfolio or spend data can look wonky
-                // ... and so will the portfolio results
-                if (0 >= oneYear.endValue) {
-                    break;
-                }
-            }
-
-
-            // calc the geometric means for quantities that compound - this is more accurate
-            var meanReturn = Math.pow(totalReturnFactor, (1 / testData.length)) - 1;
-            var meanSafeReturn = Math.pow(safeReturnFactor, (1 / testData.length)) - 1;
-            var meanInflation = Math.pow(inflationFactor, (1 / testData.length)) - 1;
-            var meanPctSpend = Math.pow(spendFactor, (1 / testData.length)) - 1;
-            var stdDeviationReturn = d3.deviation(testResults, (d) => d.aggReturn);
-            var portfolioMetrics = {
-                'sharpeRatio' : ((meanReturn - meanSafeReturn) / stdDeviationReturn),
-                'harvestingRatio' : (meanReturn - (meanInflation + meanPctSpend)) / stdDeviationReturn,
-            }
-
-            /*
-            console.log('r: ' + makePct(meanReturn) + ' safe: ' + makePct(meanSafeReturn) + 
-                        ' infl: ' + makePct(meanInflation) + ' actsp: ' + makePct(meanPctSpend) +
-                        ' sharpe: ' + Number(portfolioMetrics.sharpeRatio).toFixed(4),
-                        ' harvest: ' + Number(portfolioMetrics.harvestingRatio).toFixed(4)
-            ); 
-             */
-            return portfolioMetrics;
-        }
 
         if (null != this.sourceData) {
-            // var portfolioMetrics = testPortfolio ();
-
             calcCycles(this.sourceData);
             cullOutliers ();
         }

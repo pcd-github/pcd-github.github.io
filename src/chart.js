@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import SummaryCards from "./summary.js";
 import EndValueChart from './endvaluechart.js';
 import "./chartdata.css";
-import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency, dumpCycleToCSVFile, makePct} from './common.js';
+import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency, dumpCycleToCSVFile } from './common.js';
 
 function Chart (props) {
   
