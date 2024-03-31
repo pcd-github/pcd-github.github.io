@@ -32,10 +32,10 @@ function SummaryCards (props) {
                             { makePct(props.netpositivepct)} positive years
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            sharpe ratio: { Number(props.sharperatio).toFixed(2) }
+                            sharpe ratio: { Number(props.sharperatio).toFixed(4) }
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            harvesting ratio: {Number(props.allocharvestratio).toFixed(2)}
+                            harvesting ratio: {Number(props.harvestratio).toFixed(4)}
                         </Typography>
                     </CardContent>
                 </Card>

@@ -571,7 +571,7 @@ class SWRCalc extends React.Component {
         }
 
         if (null != this.sourceData) {
-            var portfolioMetrics = testPortfolio ();
+            // var portfolioMetrics = testPortfolio ();
 
             calcCycles(this.sourceData);
             cullOutliers ();
@@ -721,8 +721,6 @@ class SWRCalc extends React.Component {
                        numcycles={ allCycles.length  }
                        currentage={this.state.currentAgeState}
                        lifeexpectancy={this.state.lifeExpectancyState}
-                       sharperatio={portfolioMetrics.sharpeRatio}
-                       harvestratio={portfolioMetrics.harvestingRatio}
                        minzoom={this.state.minZoomValueState}
                        maxzoom={this.state.maxZoomValueState}
                        zoomcolor={this.state.zoomColorState}
