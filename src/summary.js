@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Stack } from "@mui/material";
+import { Stack, Tooltip } from "@mui/material";
 import { Card } from "@mui/material";
 import { CardContent } from "@mui/material";
 import { Typography } from "@mui/material";
@@ -23,23 +23,32 @@ function SummaryCards (props) {
                             {makePct(1 - (props.fails / props.cycles))} success ({props.cycles - props.fails} / {props.cycles} )
                         </Typography>
                         <Typography variant="body2" color="textSecondary" component="p">
-                            Minimum failure age : {(Number.POSITIVE_INFINITY === props.minfailage) ? 'n/a' : props.minfailage}
+                            Earliest failure age : {(Number.POSITIVE_INFINITY === props.minfailage) ? 'n/a' : props.minfailage}
                         </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            {makePct(props.numgreaterthanstart / props.cycles)} positive cycles 
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            { makePct(props.netpositivepct)} positive years
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            sharpe ratio: { Number(props.sharperatio).toFixed(4) }
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            harvesting ratio: {Number(props.harvestratio).toFixed(4)}
-                        </Typography>
+                        <Tooltip title='% of cycles ending with more than we started with'>
+                            <Typography variant="body2" color="textSecondary" component="p">
+                                {makePct(props.numgreaterthanstart / props.cycles)} positive cycles 
+                            </Typography>
+                        </Tooltip>
+                        <Tooltip title='% of years (all cycles) ending with more than we started with'>
+                            <Typography variant="body2" color="textSecondary" component="p">
+                                { makePct(props.netpositivepct)} positive years
+                            </Typography>
+                        </Tooltip>
+                        <Tooltip title='ratio of reward over risk' >
+                            <Typography variant="body2" color="textSecondary" component="p">
+                                sharpe ratio: { Number(props.sharperatio).toFixed(4) }
+                            </Typography>                            
+                        </Tooltip>
+                        <Tooltip title='ratio of reward (less withdrawals and inflation) over risk' >
+                            <Typography variant="body2" color="textSecondary" component="p">
+                                harvesting ratio: {Number(props.harvestratio).toFixed(4)}
+                            </Typography>                            
+                        </Tooltip>
                     </CardContent>
                 </Card>
                 <Card>
+                    <Tooltip title='range of portfolio value at end of life'>
                     <CardContent>
                         <Typography variant="subtitle1" >
                             end value
@@ -62,30 +71,40 @@ function SummaryCards (props) {
                         <Typography variant="body2" color="textSecondary" component="p">
                             min: { makeCurrency(props.minendvalue) }
                         </Typography>
-
-                    </CardContent>
+                    </CardContent>                        
+                    </Tooltip>
                 </Card>
                 <Card>
                     <CardContent>
+                        <Tooltip title="annualized aggregate returns" >
+                            <Typography variant="subtitle1" >
+                                return
+                            </Typography>                            
+                        </Tooltip>
+                        <Tooltip title='annualized aggregate returns per cycle'>
+                            <Typography variant="body2" color="textSecondary" component="p">
+                                median: { makePct(props.medianreturns) } 
+                            </Typography>
+                        </Tooltip>
+                        <Tooltip title='annualized aggregate returns per cycle'>
+                            <Typography variant="body2" color="textSecondary" component="p">
+                                range: ({ makePct(props.minreturns) }, { makePct(props.maxreturns) })
+                            </Typography>
+                        </Tooltip>
                         <Typography variant="subtitle1" >
-                            annualized return
+                            net growth
                         </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            median: { makePct(props.medianreturns) }
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            range: ({ makePct(props.minreturns) }, { makePct(props.maxreturns) })
-                        </Typography>
-                        <Typography variant="subtitle1" >
-                            annualized net growth
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            median: { makePct(props.mediannetgrowth) } 
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            range: ({ makePct(props.minnetgrowth) }, { makePct(props.maxnetgrowth) })
-                        </Typography>
-                        </CardContent>
+                        <Tooltip title="annualized returns, less withdrawals per cycle" >
+                            <Typography variant="body2" color="textSecondary" component="p">
+                                median: { makePct(props.mediannetgrowth) }
+                            </Typography>
+                        </Tooltip>
+                        <Tooltip title="annualized returns, less withdrawals per cycle" >
+                            <Typography variant="body2" color="textSecondary" component="p">
+                                range: ({ makePct(props.minnetgrowth) }, { makePct(props.maxnetgrowth) })
+                            </Typography>
+                        </Tooltip>
+                    </CardContent>
                 </Card>  
             </Stack>             
         </div>

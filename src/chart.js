@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import SummaryCards from "./summary.js";
 import EndValueChart from './endvaluechart.js';
 import "./chartdata.css";
-import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency, dumpCycleToCSVFile } from './common.js';
+import { margin, marginTranslate, getSelectedOpacity, getUnselectedOpacity, getPerRunClassName, getPortfolioLineClassName, findByID, cleanupPrev, makeCurrency, dumpCycleToCSVFile, makePct } from './common.js';
 
 function Chart (props) {
   
@@ -17,13 +17,13 @@ function Chart (props) {
     const [quantile50EndValueState, setQuantile50AdjEndValueState] = useState(0);
     const [quantile75EndValueState, setQuantile75AdjEndValueState] = useState(0);
 
-    const [medianNetGrowthState, setMedianNetGrowthState] = useState(0);
-    const [minNetGrowthState, setMinNetGrowthState] = useState(0);
-    const [maxNetGrowthState, setMaxNetGrowthState] = useState(0);
-
     const [medianReturnsState, setMedianReturnsState] = useState(0);
     const [minReturnsState, setMinReturnsState] = useState(0);
     const [maxReturnsState, setMaxReturnsState] = useState(0);
+
+    const [medianNetGrowthState, setMedianNetGrowthState] = useState(0);
+    const [minNetGrowthState, setMinNetGrowthState] = useState(0);
+    const [maxNetGrowthState, setMaxNetGrowthState] = useState(0);
 
     const [medianSharpeRatioState, setMedianSharpeRatioState] = useState(0);
     const [medianHarvestingRatioState, setMedianHarvestingRatioState] = useState(0);
@@ -175,7 +175,6 @@ function Chart (props) {
                 cycleGrowth *= oneYearGrowth;
                 cycleSafeReturn *= (1 + oneYearData.bondReturn);
                 cycleInflation *= (1 + oneYearData.pctInflation);
-
             }
 
             var cycleStdDeviation = d3.deviation(allCycleData[iCycle], (d) => d.aggReturn);
@@ -473,11 +472,11 @@ function Chart (props) {
              quantile75endvalue={quantile75EndValueState}
              maxendvalue={maxAdjEndValueState}
              minendvalue={minAdjEndValueState}
+             medianreturns={medianReturnsState}
+             minreturns={minReturnsState} maxreturns={maxReturnsState}
              mediannetgrowth={medianNetGrowthState}
              minnetgrowth={minNetGrowthState}
              maxnetgrowth={maxNetGrowthState}
-             medianreturns={medianReturnsState}
-             minreturns={minReturnsState} maxreturns={maxReturnsState}
              netpositivepct={pctPositiveNetState}
              harvestratio={medianHarvestingRatioState}
              sharperatio={medianSharpeRatioState}
